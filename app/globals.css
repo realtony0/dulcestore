@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dulce-orange: #f5871f;
+  --dulce-ink: #2b2119;
+}
+
+body {
+  background: #f5f6f8;
+  color: var(--dulce-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-dulce-orange px-6 py-3 font-semibold text-white transition duration-150 hover:bg-dulce-orange-dark active:translate-y-px disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-dulce-ink/15 bg-white px-6 py-3 font-semibold text-dulce-ink transition duration-150 hover:border-dulce-orange hover:text-dulce-orange;
+  }
+
+  .card {
+    @apply rounded-lg border border-dulce-border bg-white shadow-soft transition duration-150 hover:border-dulce-orange/50 hover:shadow-card;
+  }
+
+  .field {
+    @apply w-full rounded-lg border border-dulce-ink/15 bg-white px-4 py-3 text-dulce-ink outline-none transition focus:border-dulce-orange focus:ring-4 focus:ring-dulce-orange/15;
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-dulce-ink/80;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-dulce-orange-light px-3 py-1 text-xs font-bold uppercase tracking-wide text-dulce-orange-dark;
+  }
+
+  .eyebrow {
+    @apply text-sm font-bold uppercase tracking-[0.25em] text-dulce-orange;
+  }
+
+  .section-title {
+    @apply text-2xl font-extrabold tracking-tight text-dulce-ink sm:text-3xl;
+  }
+
+  .option-card {
+    @apply rounded-lg border-2 px-5 py-4 text-left transition duration-150;
+  }
+
+  .option-card-idle {
+    @apply border-dulce-ink/10 bg-white hover:border-dulce-orange/40 hover:shadow-soft;
+  }
+
+  .option-card-active {
+    @apply border-dulce-orange bg-dulce-orange-light shadow-soft;
+  }
+}
+
+@layer utilities {
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-dulce-orange/30;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.skeleton {
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
