@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import { MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { isAuthenticated, isAdminConfigured } from "@/lib/admin-auth";
 import { getShippingMethod, formatFCFA } from "@/lib/shipping";
 import { PAYMENT_METHODS } from "@/lib/site-config";
 
 export const metadata: Metadata = { title: "Commandes", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
-type Props = { searchParams: Promise<{ erreur?: string }> };
 
 const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
   EN_ATTENTE: { label: "En attente", cls: "bg-amber-100 text-amber-800" },
@@ -17,41 +15,7 @@ const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
   REMBOURSE: { label: "Remboursé", cls: "bg-slate-200 text-slate-700" },
 };
 
-function LoginForm({ erreur, configured }: { erreur?: string; configured: boolean }) {
-  return (
-    <div className="mx-auto max-w-sm px-4 py-24">
-      <h1 className="text-2xl font-extrabold">Espace commandes</h1>
-
-      {!configured ? (
-        <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Aucun mot de passe administrateur n&apos;est configuré. Ajoutez{" "}
-          <code className="font-mono">ADMIN_PASSWORD</code> dans le fichier <code>.env</code> puis
-          redémarrez le serveur.
-        </p>
-      ) : (
-        <form action="/api/admin/session" method="post" className="mt-6">
-          <label className="label" htmlFor="password">
-            Mot de passe
-          </label>
-          <input id="password" name="password" type="password" required autoFocus className="field" />
-          {erreur && (
-            <p className="mt-2 text-sm font-medium text-red-600">Mot de passe incorrect.</p>
-          )}
-          <button type="submit" className="btn-primary focus-ring mt-4 w-full">
-            Se connecter
-          </button>
-        </form>
-      )}
-    </div>
-  );
-}
-
-export default async function AdminPage({ searchParams }: Props) {
-  const { erreur } = await searchParams;
-
-  if (!(await isAuthenticated())) {
-    return <LoginForm erreur={erreur} configured={isAdminConfigured()} />;
-  }
+export default async function AdminPage() {
 
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
@@ -62,17 +26,10 @@ export default async function AdminPage({ searchParams }: Props) {
   const revenue = paid.reduce((n, o) => n + o.productTotalFCFA, 0);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Commandes</h1>
-        <form action="/api/admin/logout" method="post">
-          <button type="submit" className="btn-ghost focus-ring text-sm">
-            Se déconnecter
-          </button>
-        </form>
-      </div>
+    <div>
+      <h1 className="text-2xl font-extrabold tracking-tight">Commandes</h1>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+      <div className="mt-5 grid gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-dulce-border bg-white p-5">
           <p className="text-xs font-bold uppercase tracking-wider text-dulce-ink/40">Total</p>
           <p className="mt-1 text-2xl font-extrabold">{orders.length}</p>

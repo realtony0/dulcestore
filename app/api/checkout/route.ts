@@ -128,13 +128,30 @@ export async function POST(request: Request) {
     },
   });
 
-  const payment = await createPayment(paymentMethod, {
-    reference,
-    amountFCFA: productTotalFCFA,
-    customerName,
-    customerPhone,
-    customerEmail,
-  });
+  // La commande est déjà enregistrée : si le prestataire de paiement refuse
+  // (compte non activé, panne, clés invalides), on ne la perd pas. On renvoie
+  // le client vers sa confirmation avec un message clair plutôt qu'une 500
+  // muette, et il est recontacté sur WhatsApp pour régler autrement.
+  let payment;
+  try {
+    payment = await createPayment(paymentMethod, {
+      reference,
+      amountFCFA: productTotalFCFA,
+      customerName,
+      customerPhone,
+      customerEmail,
+    });
+  } catch (error) {
+    console.error(`Paiement indisponible pour la commande ${reference} :`, error);
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { status: "PAIEMENT_INDISPONIBLE" },
+    });
+    return NextResponse.json({
+      reference,
+      redirectUrl: `/commande/confirmation?ref=${reference}&paiement=indisponible`,
+    });
+  }
 
   if (payment.providerRef) {
     await prisma.order.update({

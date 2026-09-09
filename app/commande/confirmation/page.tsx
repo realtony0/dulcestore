@@ -9,10 +9,11 @@ import { ClearCart } from "@/components/clear-cart";
 
 export const metadata: Metadata = { title: "Commande confirmée" };
 
-type Props = { searchParams: Promise<{ ref?: string; simule?: string }> };
+type Props = { searchParams: Promise<{ ref?: string; simule?: string; paiement?: string }> };
 
 export default async function ConfirmationPage({ searchParams }: Props) {
-  const { ref, simule } = await searchParams;
+  const { ref, simule, paiement } = await searchParams;
+  const paiementIndisponible = paiement === "indisponible";
   if (!ref) notFound();
 
   const order = await prisma.order.findUnique({
@@ -41,6 +42,28 @@ export default async function ConfirmationPage({ searchParams }: Props) {
         </p>
       </div>
 
+      {paiementIndisponible && (
+        <div className="mt-8 rounded-2xl border-2 border-dulce-orange bg-dulce-orange-light p-5">
+          <p className="font-bold">Le paiement en ligne est momentanément indisponible</p>
+          <p className="mt-2 text-sm leading-relaxed text-dulce-ink/80">
+            Votre commande <strong>{order.reference}</strong> est bien enregistrée et rien ne vous a
+            été débité. Nous vous contactons sur WhatsApp au{" "}
+            <strong>{order.customerPhone}</strong> pour convenir du règlement et vous communiquer
+            les frais de livraison.
+          </p>
+          <a
+            href={whatsappLink(
+              `Bonjour ${SITE.name}, ma commande ${order.reference} n'a pas pu être payée en ligne.`,
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary focus-ring mt-4 inline-flex"
+          >
+            Nous écrire maintenant
+          </a>
+        </div>
+      )}
+
       {simule === "1" && (
         <div className="mt-8 rounded-2xl border-2 border-amber-400 bg-amber-50 p-5 text-sm">
           <p className="font-bold text-amber-900">Paiement simulé</p>
@@ -52,7 +75,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
         </div>
       )}
 
-      {simule !== "1" && order.paymentStatus === "EN_ATTENTE" && (
+      {simule !== "1" && !paiementIndisponible && order.paymentStatus === "EN_ATTENTE" && (
         <div className="mt-8 rounded-2xl border-2 border-amber-400 bg-amber-50 p-5 text-sm">
           <p className="font-bold text-amber-900">Confirmation du paiement en cours</p>
           <p className="mt-1 text-amber-900/80">
