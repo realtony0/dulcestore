@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatFCFA } from "@/lib/shipping";
+import { AdminForm, SubmitButton } from "@/components/admin-form";
 import {
   saveCategory,
   deleteCategory,
@@ -80,7 +81,7 @@ export default async function CataloguePage() {
                     {formatFCFA(p.priceFCFA)}
                   </td>
                   <td className="px-4 py-3">
-                    <form action={toggleStock}>
+                    <AdminForm action={toggleStock}>
                       <input type="hidden" name="id" value={p.id} />
                       <button
                         type="submit"
@@ -92,7 +93,7 @@ export default async function CataloguePage() {
                       >
                         {p.inStock ? "En stock" : "Masqué"}
                       </button>
-                    </form>
+                    </AdminForm>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
@@ -103,7 +104,7 @@ export default async function CataloguePage() {
                       >
                         <Pencil className="h-4 w-4" />
                       </Link>
-                      <form action={deleteProduct}>
+                      <AdminForm action={deleteProduct}>
                         <input type="hidden" name="id" value={p.id} />
                         <button
                           type="submit"
@@ -112,7 +113,7 @@ export default async function CataloguePage() {
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
-                      </form>
+                      </AdminForm>
                     </div>
                   </td>
                 </tr>
@@ -132,7 +133,7 @@ export default async function CataloguePage() {
         <div className="mt-5 space-y-4">
           {categories.map((cat) => (
             <div key={cat.id} className="rounded-lg border border-dulce-border bg-white p-5">
-              <form action={saveCategory} className="grid gap-3 sm:grid-cols-[1fr_1.4fr_5rem_auto]">
+              <AdminForm action={saveCategory} className="grid gap-3 sm:grid-cols-[1fr_1.4fr_5rem_auto]">
                 <input type="hidden" name="id" value={cat.id} />
                 <input name="name" defaultValue={cat.name} required className="field" aria-label="Nom" />
                 <input
@@ -152,7 +153,7 @@ export default async function CataloguePage() {
                 <button type="submit" className="btn-ghost focus-ring whitespace-nowrap text-sm">
                   Enregistrer
                 </button>
-              </form>
+              </AdminForm>
 
               <div className="mt-4 border-t border-dulce-border pt-4">
                 <p className="text-xs font-bold uppercase tracking-wider text-dulce-ink/40">
@@ -162,7 +163,7 @@ export default async function CataloguePage() {
                 <div className="mt-3 space-y-2">
                   {cat.subcategories.map((sub) => (
                     <div key={sub.id} className="flex flex-wrap items-center gap-2">
-                      <form action={saveSubcategory} className="flex flex-1 flex-wrap gap-2">
+                      <AdminForm action={saveSubcategory} className="flex flex-1 flex-wrap gap-2">
                         <input type="hidden" name="id" value={sub.id} />
                         <input type="hidden" name="categoryId" value={cat.id} />
                         <input
@@ -182,8 +183,8 @@ export default async function CataloguePage() {
                         <button type="submit" className="btn-ghost focus-ring text-sm">
                           OK
                         </button>
-                      </form>
-                      <form action={deleteSubcategory}>
+                      </AdminForm>
+                      <AdminForm action={deleteSubcategory}>
                         <input type="hidden" name="id" value={sub.id} />
                         <button
                           type="submit"
@@ -192,11 +193,11 @@ export default async function CataloguePage() {
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
-                      </form>
+                      </AdminForm>
                     </div>
                   ))}
 
-                  <form action={saveSubcategory} className="flex flex-wrap gap-2">
+                  <AdminForm action={saveSubcategory} className="flex flex-wrap gap-2">
                     <input type="hidden" name="categoryId" value={cat.id} />
                     <input
                       name="name"
@@ -209,7 +210,7 @@ export default async function CataloguePage() {
                       <Plus className="h-4 w-4" aria-hidden />
                       Ajouter
                     </button>
-                  </form>
+                  </AdminForm>
                 </div>
               </div>
 
@@ -218,7 +219,7 @@ export default async function CataloguePage() {
                   {cat._count.products} produit{cat._count.products > 1 ? "s" : ""} · slug{" "}
                   <code className="font-mono">{cat.slug}</code>
                 </p>
-                <form action={deleteCategory}>
+                <AdminForm action={deleteCategory}>
                   <input type="hidden" name="id" value={cat.id} />
                   <button
                     type="submit"
@@ -226,23 +227,23 @@ export default async function CataloguePage() {
                   >
                     Supprimer la catégorie
                   </button>
-                </form>
+                </AdminForm>
               </div>
             </div>
           ))}
         </div>
 
-        <form
+        <AdminForm
           action={saveCategory}
           className="mt-5 grid gap-3 rounded-lg border border-dashed border-dulce-ink/25 bg-white p-5 sm:grid-cols-[1fr_1.4fr_auto]"
         >
           <input name="name" required placeholder="Nom de la catégorie" className="field" />
           <input name="tagline" placeholder="Accroche" className="field" />
-          <button type="submit" className="btn-primary focus-ring whitespace-nowrap text-sm">
+          <SubmitButton className="btn-primary focus-ring whitespace-nowrap text-sm">
             <Plus className="h-4 w-4" aria-hidden />
             Créer la catégorie
-          </button>
-        </form>
+          </SubmitButton>
+        </AdminForm>
       </section>
     </div>
   );

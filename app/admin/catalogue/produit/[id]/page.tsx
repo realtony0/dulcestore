@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { saveProduct } from "@/lib/admin-actions";
+import { AdminForm, SubmitButton } from "@/components/admin-form";
 import { isR2Configured } from "@/lib/r2";
 
 export const metadata: Metadata = { title: "Produit", robots: { index: false, follow: false } };
@@ -39,7 +40,7 @@ export default async function ProduitFormPage({ params }: Props) {
         {creation ? "Nouveau produit" : product!.name}
       </h1>
 
-      <form action={saveProduct} className="mt-7 space-y-6">
+      <AdminForm action={saveProduct} className="mt-7 space-y-6">
         {!creation && <input type="hidden" name="id" value={product!.id} />}
 
         <div className="rounded-lg border border-dulce-border bg-white p-5">
@@ -272,14 +273,14 @@ export default async function ProduitFormPage({ params }: Props) {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <button type="submit" className="btn-primary focus-ring">
+          <SubmitButton pendingLabel="Enregistrement…">
             {creation ? "Créer le produit" : "Enregistrer les modifications"}
-          </button>
+          </SubmitButton>
           <Link href="/admin/catalogue" className="btn-ghost focus-ring">
             Annuler
           </Link>
         </div>
-      </form>
+      </AdminForm>
     </div>
   );
 }
