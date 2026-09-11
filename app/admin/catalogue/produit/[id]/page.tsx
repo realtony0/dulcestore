@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { saveProduct } from "@/lib/admin-actions";
+import { saveProduct, deleteProductImage, setMainImage } from "@/lib/admin-actions";
 import { AdminForm, SubmitButton } from "@/components/admin-form";
 import { isR2Configured } from "@/lib/r2";
 
@@ -19,7 +20,10 @@ export default async function ProduitFormPage({ params }: Props) {
   const [product, categories] = await Promise.all([
     creation
       ? null
-      : prisma.product.findUnique({ where: { id }, include: { subcategory: true } }),
+      : prisma.product.findUnique({
+          where: { id },
+          include: { subcategory: true, images: { orderBy: { position: "asc" } } },
+        }),
     prisma.category.findMany({
       orderBy: { position: "asc" },
       include: { subcategories: { orderBy: { position: "asc" } } },
@@ -220,34 +224,38 @@ export default async function ProduitFormPage({ params }: Props) {
         </div>
 
         <div className="rounded-lg border border-dulce-border bg-white p-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-dulce-ink/40">Photo</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-dulce-ink/40">Photos</p>
 
           {product?.imageUrl && (
             <div className="mt-4 flex items-center gap-4">
-              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-dulce-cream">
+              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border-2 border-dulce-orange bg-dulce-cream">
                 <Image src={product.imageUrl} alt="" fill sizes="96px" className="object-cover" />
               </div>
-              <p className="min-w-0 break-all font-mono text-xs text-dulce-ink/45">
-                {product.imageUrl}
-              </p>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-dulce-orange">Photo principale</p>
+                <p className="mt-0.5 text-xs text-dulce-ink/55">
+                  C&apos;est elle qui apparaît sur les cartes produit et en tête de la fiche.
+                </p>
+              </div>
             </div>
           )}
 
           {uploadDispo ? (
             <div className="mt-4">
               <label className="label" htmlFor="imageFile">
-                Envoyer une nouvelle photo
+                Ajouter des photos
               </label>
               <input
                 id="imageFile"
                 name="imageFile"
                 type="file"
+                multiple
                 accept="image/jpeg,image/png,image/webp,image/avif"
                 className="field"
               />
               <p className="mt-1 text-xs text-dulce-ink/50">
-                JPEG, PNG, WebP ou AVIF — 5 Mo maximum. Laissez vide pour conserver la photo
-                actuelle.
+                Plusieurs fichiers possibles — JPEG, PNG, WebP ou AVIF, 5 Mo chacun. Elles
+                s&apos;ajoutent à la galerie sans remplacer les existantes.
               </p>
             </div>
           ) : (
@@ -281,6 +289,67 @@ export default async function ProduitFormPage({ params }: Props) {
           </Link>
         </div>
       </AdminForm>
+
+      {product && product.images.length > 0 && (
+        <section className="mt-8 rounded-lg border border-dulce-border bg-white p-5">
+          <p className="text-xs font-bold uppercase tracking-wider text-dulce-ink/40">
+            Galerie ({product.images.length})
+          </p>
+          <p className="mt-1 text-xs text-dulce-ink/50">
+            Ces photos s&apos;affichent sous la photo principale sur la fiche produit.
+          </p>
+
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {product.images.map((img) => {
+              const principale = img.url === product.imageUrl;
+              return (
+                <div key={img.id} className="overflow-hidden rounded-lg border border-dulce-border">
+                  <div className="relative aspect-square bg-dulce-cream">
+                    <Image src={img.url} alt="" fill sizes="180px" className="object-cover" />
+                    {principale && (
+                      <span className="absolute left-2 top-2 rounded-full bg-dulce-orange px-2 py-0.5 text-[0.65rem] font-bold text-white">
+                        Principale
+                      </span>
+                    )}
+                    {img.kind === "fiche" && (
+                      <span className="absolute right-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[0.65rem] font-bold text-dulce-ink/60">
+                        Fiche technique
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-1 p-2">
+                    {principale ? (
+                      <span className="px-1 text-xs text-dulce-ink/40">Photo mise en avant</span>
+                    ) : (
+                      <AdminForm action={setMainImage}>
+                        <input type="hidden" name="productId" value={product.id} />
+                        <input type="hidden" name="url" value={img.url} />
+                        <SubmitButton
+                          pendingLabel="…"
+                          className="focus-ring rounded px-1.5 py-1 text-xs font-semibold text-dulce-ink/60 transition hover:text-dulce-orange"
+                        >
+                          Mettre en principale
+                        </SubmitButton>
+                      </AdminForm>
+                    )}
+
+                    <AdminForm action={deleteProductImage}>
+                      <input type="hidden" name="imageId" value={img.id} />
+                      <SubmitButton
+                        pendingLabel="…"
+                        className="focus-ring rounded p-1.5 text-dulce-ink/45 transition hover:bg-red-50 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden />
+                      </SubmitButton>
+                    </AdminForm>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

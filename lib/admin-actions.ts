@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "./db";
 import { isAuthenticated } from "./admin-auth";
-import { uploadImage, isR2Configured } from "./r2";
+import { uploadImage, deleteImage, isR2Configured } from "./r2";
 
 /**
  * Écritures du back-office. Chaque action revérifie la session : une action
@@ -153,19 +153,23 @@ export async function saveProduct(_prev: ActionResult, formData: FormData): Prom
     const categoryId = str(formData, "categoryId");
     if (!categoryId) return { error: "La catégorie est obligatoire." };
 
-    // Image : upload R2 si un fichier est fourni, sinon URL saisie, sinon on
-    // conserve celle déjà enregistrée.
-    let imageUrl = str(formData, "imageUrl");
-    const file = formData.get("imageFile");
-    if (file instanceof File && file.size > 0) {
-      if (!isR2Configured()) {
-        return {
-          error:
-            "L'upload d'images n'est pas configuré (variables R2_*). Collez une URL d'image en attendant.",
-        };
-      }
-      imageUrl = await uploadImage(file, "produits");
+    // Photos : on accepte plusieurs fichiers d'un coup. La première photo
+    // envoyée devient la principale si aucune n'est déjà définie.
+    const files = formData
+      .getAll("imageFile")
+      .filter((f): f is File => f instanceof File && f.size > 0);
+
+    if (files.length > 0 && !isR2Configured()) {
+      return {
+        error:
+          "L'upload d'images n'est pas configuré (variables R2_*). Collez une URL d'image en attendant.",
+      };
     }
+
+    const uploaded: string[] = [];
+    for (const f of files) uploaded.push(await uploadImage(f, "produits"));
+
+    const imageUrl = str(formData, "imageUrl") || uploaded[0] || "";
     if (!imageUrl) return { error: "Une photo est obligatoire (upload ou URL)." };
 
     const subcategoryId = str(formData, "subcategoryId");
@@ -188,10 +192,23 @@ export async function saveProduct(_prev: ActionResult, formData: FormData): Prom
       subcategoryId: subcategoryId || null,
     };
 
-    if (id) {
-      await prisma.product.update({ where: { id }, data });
-    } else {
-      await prisma.product.create({ data: { ...data, afficheUrl: "" } });
+    const saved = id
+      ? await prisma.product.update({ where: { id }, data })
+      : await prisma.product.create({ data: { ...data, afficheUrl: "" } });
+
+    if (uploaded.length > 0) {
+      const last = await prisma.productImage.findFirst({
+        where: { productId: saved.id },
+        orderBy: { position: "desc" },
+      });
+      await prisma.productImage.createMany({
+        data: uploaded.map((url, i) => ({
+          url,
+          kind: "photo",
+          position: (last?.position ?? -1) + 1 + i,
+          productId: saved.id,
+        })),
+      });
     }
 
     refresh();
@@ -232,6 +249,51 @@ export async function toggleStock(_prev: ActionResult, formData: FormData): Prom
     const product = await prisma.product.findUnique({ where: { id } });
     if (!product) return { error: "Produit introuvable." };
     await prisma.product.update({ where: { id }, data: { inStock: !product.inStock } });
+    refresh();
+    return {};
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Retire une photo de la galerie, et du stockage R2 si elle y est hébergée. */
+export async function deleteProductImage(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+    const imageId = str(formData, "imageId");
+    const image = await prisma.productImage.findUnique({ where: { id: imageId } });
+    if (!image) return { error: "Photo introuvable." };
+
+    const product = await prisma.product.findUnique({ where: { id: image.productId } });
+    if (product?.imageUrl === image.url) {
+      return {
+        error: "C'est la photo principale. Choisissez-en une autre avant de la supprimer.",
+      };
+    }
+
+    await prisma.productImage.delete({ where: { id: imageId } });
+    await deleteImage(image.url);
+    refresh();
+    return {};
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Promeut une photo de la galerie en photo principale du produit. */
+export async function setMainImage(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+    const productId = str(formData, "productId");
+    const url = str(formData, "url");
+    if (!url) return { error: "Photo invalide." };
+    await prisma.product.update({ where: { id: productId }, data: { imageUrl: url } });
     refresh();
     return {};
   } catch (e) {
