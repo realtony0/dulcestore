@@ -14,23 +14,32 @@ import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client
  * on colle simplement l'URL d'une image déjà en ligne.
  */
 
+/**
+ * Les valeurs sont nettoyées : un espace ou un retour à la ligne collé par
+ * inadvertance dans le panneau d'environnement suffit à faire échouer la
+ * signature S3 avec un message peu parlant ("signature does not match").
+ */
+function env(name: string): string {
+  return (process.env[name] ?? "").trim();
+}
+
 export function isR2Configured(): boolean {
-  return Boolean(
-    process.env.R2_ACCOUNT_ID &&
-      process.env.R2_ACCESS_KEY_ID &&
-      process.env.R2_SECRET_ACCESS_KEY &&
-      process.env.R2_BUCKET &&
-      process.env.R2_PUBLIC_URL,
-  );
+  return [
+    "R2_ACCOUNT_ID",
+    "R2_ACCESS_KEY_ID",
+    "R2_SECRET_ACCESS_KEY",
+    "R2_BUCKET",
+    "R2_PUBLIC_URL",
+  ].every((n) => env(n).length > 0);
 }
 
 function client(): S3Client {
   return new S3Client({
     region: "auto",
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    endpoint: `https://${env("R2_ACCOUNT_ID")}.r2.cloudflarestorage.com`,
     credentials: {
-      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+      accessKeyId: env("R2_ACCESS_KEY_ID"),
+      secretAccessKey: env("R2_SECRET_ACCESS_KEY"),
     },
   });
 }
@@ -57,7 +66,7 @@ export async function uploadImage(file: File, prefix: string): Promise<string> {
 
   await client().send(
     new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET!,
+      Bucket: env("R2_BUCKET"),
       Key: key,
       Body: body,
       ContentType: file.type,
@@ -65,18 +74,18 @@ export async function uploadImage(file: File, prefix: string): Promise<string> {
     }),
   );
 
-  return `${process.env.R2_PUBLIC_URL!.replace(/\/$/, "")}/${key}`;
+  return `${env("R2_PUBLIC_URL").replace(/\/$/, "")}/${key}`;
 }
 
 /** Supprime une image de R2. Sans effet sur les images servies depuis public/. */
 export async function deleteImage(url: string): Promise<void> {
   if (!isR2Configured()) return;
-  const base = process.env.R2_PUBLIC_URL!.replace(/\/$/, "");
+  const base = env("R2_PUBLIC_URL").replace(/\/$/, "");
   if (!url.startsWith(base)) return;
 
   await client().send(
     new DeleteObjectCommand({
-      Bucket: process.env.R2_BUCKET!,
+      Bucket: env("R2_BUCKET"),
       Key: url.slice(base.length + 1),
     }),
   );
