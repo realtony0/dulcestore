@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { getShippingMethod, formatFCFA } from "@/lib/shipping";
+import { getShippingMethod, formatFCFA, formatWeight } from "@/lib/shipping";
 import { PAYMENT_METHODS } from "@/lib/site-config";
 
 export const metadata: Metadata = { title: "Commandes", robots: { index: false, follow: false } };
@@ -128,7 +128,7 @@ export default async function AdminPage() {
                       Destination : {order.destination === "SENEGAL" ? "Sénégal" : "Europe / USA"}
                     </p>
                     <p className="text-sm text-dulce-ink/70">
-                      Poids estimé : <strong>{order.totalWeightKg.toFixed(2)} kg</strong>
+                      Poids estimé : <strong>{formatWeight(order.totalWeightKg)}</strong>
                     </p>
                     <p className="text-sm text-dulce-ink/70">
                       Réglé par {payment?.name ?? order.paymentMethod}

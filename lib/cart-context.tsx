@@ -81,7 +81,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       remove: (key) => setLines((prev) => prev.filter((l) => l.key !== key)),
       clear: () => setLines([]),
       totalFCFA: lines.reduce((sum, l) => sum + l.unitPriceFCFA * l.quantity, 0),
-      totalWeightKg: lines.reduce((sum, l) => sum + l.unitWeightKg * l.quantity, 0),
+      // Dès qu'un article n'a pas de poids renseigné, le total est inconnu :
+      // un partiel serait présenté comme un vrai poids et fausserait le fret.
+      totalWeightKg: lines.some((l) => l.unitWeightKg <= 0)
+        ? 0
+        : lines.reduce((sum, l) => sum + l.unitWeightKg * l.quantity, 0),
       itemCount: lines.reduce((sum, l) => sum + l.quantity, 0),
       ready,
     };

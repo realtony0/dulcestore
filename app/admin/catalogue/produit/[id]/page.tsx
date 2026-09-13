@@ -158,7 +158,7 @@ export default async function ProduitFormPage({ params }: Props) {
             </div>
             <div>
               <label className="label" htmlFor="weightKg">
-                Poids (kg) *
+                Poids (kg)
               </label>
               <input
                 id="weightKg"
@@ -166,11 +166,13 @@ export default async function ProduitFormPage({ params }: Props) {
                 type="number"
                 step="0.001"
                 min="0"
-                required
-                defaultValue={product?.weightKg}
+                defaultValue={product?.weightKg || ""}
                 className="field"
+                placeholder="Inconnu"
               />
-              <p className="mt-1 text-xs text-dulce-ink/50">Sert au calcul du fret.</p>
+              <p className="mt-1 text-xs text-dulce-ink/50">
+                Sert à estimer le fret. Laissez vide si inconnu : le client verra « à confirmer ».
+              </p>
             </div>
             <div>
               <label className="label" htmlFor="minOrderQty">

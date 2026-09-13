@@ -63,10 +63,19 @@ export function methodsForDestination(destination: Destination): ShippingMethod[
   return SHIPPING_METHODS.filter((m) => m.destination === destination);
 }
 
-/** Estimation indicative au poids. Le montant définitif est fixé à l'arrivée du colis. */
+/**
+ * Estimation indicative au poids. Le montant définitif est fixé à l'arrivée du
+ * colis. Un poids nul signifie « inconnu » (fiche produit sans poids) : on ne
+ * renvoie alors rien plutôt qu'une estimation à 0 FCFA qui serait trompeuse.
+ */
 export function estimateShippingFCFA(method: ShippingMethod, totalWeightKg: number): number | null {
-  if (!method.rate || method.rate.unit !== "kg") return null;
+  if (!method.rate || method.rate.unit !== "kg" || totalWeightKg <= 0) return null;
   return Math.round(method.rate.amountFCFA * totalWeightKg);
+}
+
+/** "2,50 kg", ou « à confirmer » quand le poids n'est pas renseigné. */
+export function formatWeight(kg: number): string {
+  return kg > 0 ? `${kg.toFixed(2)} kg` : "à confirmer";
 }
 
 export function formatFCFA(amount: number): string {

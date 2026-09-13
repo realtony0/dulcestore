@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
-import { formatFCFA } from "@/lib/shipping";
+import { formatFCFA, formatWeight } from "@/lib/shipping";
 
 export default function CartPage() {
   const { lines, setQuantity, remove, totalFCFA, totalWeightKg, ready } = useCart();
@@ -102,7 +102,7 @@ export default function CartPage() {
           <span className="text-3xl font-extrabold text-dulce-orange">{formatFCFA(totalFCFA)}</span>
         </div>
         <p className="mt-1 text-sm text-dulce-ink/60">
-          Poids total estimé : {totalWeightKg.toFixed(2)} kg
+          Poids total estimé : {formatWeight(totalWeightKg)}
         </p>
 
         <div className="mt-5 rounded-xl bg-dulce-orange-light p-4 text-sm">

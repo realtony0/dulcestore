@@ -8,6 +8,7 @@ import {
   EUROPE_USA_STEPS,
   estimateShippingFCFA,
   formatFCFA,
+  formatWeight,
   methodsForDestination,
   type Destination,
 } from "@/lib/shipping";
@@ -294,7 +295,7 @@ export default function CheckoutPage() {
               </span>
             </div>
             <p className="mt-1 text-sm text-dulce-ink/60">
-              Poids total estimé : {totalWeightKg.toFixed(2)} kg
+              Poids total estimé : {formatWeight(totalWeightKg)}
             </p>
           </div>
 
@@ -303,14 +304,16 @@ export default function CheckoutPage() {
             {shippingEstimate !== null ? (
               <p className="mt-1 text-dulce-ink/70">
                 Estimation : <strong>{formatFCFA(shippingEstimate)}</strong> pour{" "}
-                {totalWeightKg.toFixed(2)} kg. Le montant définitif est fixé après pesée réelle du
+                {formatWeight(totalWeightKg)}. Le montant définitif est fixé après pesée réelle du
                 colis.
               </p>
             ) : (
               <p className="mt-1 text-dulce-ink/70">
                 {selectedMethod?.rate?.unit === "CBM"
                   ? `${formatFCFA(selectedMethod.rate.amountFCFA)} / CBM. Le montant dépend du volume réel de votre colis et vous est communiqué par WhatsApp.`
-                  : "Le montant vous est communiqué par WhatsApp après validation de la commande."}
+                  : selectedMethod?.rate
+                    ? `${formatFCFA(selectedMethod.rate.amountFCFA)} / kg. Le poids de votre colis sera confirmé après pesée et le montant vous est communiqué par WhatsApp.`
+                    : "Le montant vous est communiqué par WhatsApp après validation de la commande."}
               </p>
             )}
           </div>
