@@ -49,6 +49,9 @@ const EXTENSIONS: Record<string, string> = {
   "image/png": "png",
   "image/webp": "webp",
   "image/avif": "avif",
+  // Format natif des photos iPhone, au cas où un fichier arrive non converti.
+  "image/heic": "heic",
+  "image/heif": "heif",
 };
 
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;

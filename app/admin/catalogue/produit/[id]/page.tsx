@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { saveProduct, deleteProductImage, setMainImage } from "@/lib/admin-actions";
 import { AdminForm, SubmitButton } from "@/components/admin-form";
+import { ImagePicker } from "@/components/image-picker";
 import { isR2Configured } from "@/lib/r2";
 
 export const metadata: Metadata = { title: "Produit", robots: { index: false, follow: false } };
@@ -244,21 +245,7 @@ export default async function ProduitFormPage({ params }: Props) {
 
           {uploadDispo ? (
             <div className="mt-4">
-              <label className="label" htmlFor="imageFile">
-                Ajouter des photos
-              </label>
-              <input
-                id="imageFile"
-                name="imageFile"
-                type="file"
-                multiple
-                accept="image/jpeg,image/png,image/webp,image/avif"
-                className="field"
-              />
-              <p className="mt-1 text-xs text-dulce-ink/50">
-                Plusieurs fichiers possibles — JPEG, PNG, WebP ou AVIF, 5 Mo chacun. Elles
-                s&apos;ajoutent à la galerie sans remplacer les existantes.
-              </p>
+              <ImagePicker />
             </div>
           ) : (
             <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
