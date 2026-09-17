@@ -300,3 +300,75 @@ export async function setMainImage(
     return fail(e);
   }
 }
+
+// ----------------------------------------------------------------- variantes
+
+/**
+ * Le prix affiché d'un produit à variantes est celui de la moins chère
+ * (« à partir de »). On le recalcule après chaque modification pour que les
+ * cartes produit restent justes.
+ */
+async function syncPriceFromVariants(productId: string) {
+  const cheapest = await prisma.productVariant.findFirst({
+    where: { productId },
+    orderBy: { priceFCFA: "asc" },
+  });
+  if (cheapest) {
+    await prisma.product.update({
+      where: { id: productId },
+      data: { priceFCFA: cheapest.priceFCFA, weightKg: cheapest.weightKg },
+    });
+  }
+}
+
+export async function saveVariant(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+    const id = str(formData, "id");
+    const productId = str(formData, "productId");
+    const name = str(formData, "name");
+    if (!productId || !name) return { error: "Nom de la variante obligatoire." };
+
+    const priceFCFA = Math.round(num(formData, "priceFCFA"));
+    if (priceFCFA <= 0) return { error: "Le prix de la variante doit être supérieur à 0." };
+
+    const data = {
+      name,
+      priceFCFA,
+      weightKg: Math.max(0, num(formData, "weightKg")),
+      position: num(formData, "position"),
+      productId,
+    };
+
+    if (id) await prisma.productVariant.update({ where: { id }, data });
+    else await prisma.productVariant.create({ data });
+
+    await syncPriceFromVariants(productId);
+    refresh();
+    return {};
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function deleteVariant(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+    const id = str(formData, "id");
+    const variant = await prisma.productVariant.findUnique({ where: { id } });
+    if (!variant) return { error: "Variante introuvable." };
+
+    // Une variante déjà commandée est référencée par l'historique : on refuse.
+    const ordered = await prisma.orderItem.count({ where: { variantId: id } });
+    if (ordered > 0) {
+      return { error: "Cette variante figure dans des commandes passées et ne peut pas être supprimée." };
+    }
+
+    await prisma.productVariant.delete({ where: { id } });
+    await syncPriceFromVariants(variant.productId);
+    refresh();
+    return {};
+  } catch (e) {
+    return fail(e);
+  }
+}

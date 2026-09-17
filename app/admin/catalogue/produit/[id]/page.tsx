@@ -4,7 +4,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { saveProduct, deleteProductImage, setMainImage } from "@/lib/admin-actions";
+import {
+  saveProduct,
+  deleteProductImage,
+  setMainImage,
+  saveVariant,
+  deleteVariant,
+} from "@/lib/admin-actions";
 import { AdminForm, SubmitButton } from "@/components/admin-form";
 import { ImagePicker } from "@/components/image-picker";
 import { isR2Configured } from "@/lib/r2";
@@ -23,7 +29,11 @@ export default async function ProduitFormPage({ params }: Props) {
       ? null
       : prisma.product.findUnique({
           where: { id },
-          include: { subcategory: true, images: { orderBy: { position: "asc" } } },
+          include: {
+            subcategory: true,
+            images: { orderBy: { position: "asc" } },
+            variants: { orderBy: { position: "asc" } },
+          },
         }),
     prisma.category.findMany({
       orderBy: { position: "asc" },
@@ -156,6 +166,11 @@ export default async function ProduitFormPage({ params }: Props) {
                 defaultValue={product?.priceFCFA}
                 className="field"
               />
+              {product && product.variants.length > 0 && (
+                <p className="mt-1 text-xs text-dulce-ink/50">
+                  Recalculé automatiquement depuis la variante la moins chère.
+                </p>
+              )}
             </div>
             <div>
               <label className="label" htmlFor="weightKg">
@@ -278,6 +293,84 @@ export default async function ProduitFormPage({ params }: Props) {
           </Link>
         </div>
       </AdminForm>
+
+      {product && (
+        <section className="mt-8 rounded-lg border border-dulce-border bg-white p-5">
+          <p className="text-xs font-bold uppercase tracking-wider text-dulce-ink/40">
+            Variantes ({product.variants.length})
+          </p>
+          <p className="mt-1 text-xs text-dulce-ink/50">
+            Tailles, contenances ou options avec leur propre prix et poids. Le client choisit
+            sur la fiche produit. Sans variante, le prix ci-dessus s&apos;applique.
+          </p>
+
+          <div className="mt-4 space-y-2">
+            {product.variants.map((v) => (
+              <div key={v.id} className="flex flex-wrap items-start gap-2">
+                <AdminForm
+                  action={saveVariant}
+                  className="grid flex-1 gap-2 sm:grid-cols-[1.4fr_1fr_1fr_4rem_auto]"
+                >
+                  <input type="hidden" name="id" value={v.id} />
+                  <input type="hidden" name="productId" value={product.id} />
+                  <input name="name" defaultValue={v.name} required className="field" aria-label="Nom" />
+                  <input
+                    name="priceFCFA"
+                    type="number"
+                    min="1"
+                    defaultValue={v.priceFCFA}
+                    required
+                    className="field"
+                    aria-label="Prix FCFA"
+                  />
+                  <input
+                    name="weightKg"
+                    type="number"
+                    step="0.001"
+                    min="0"
+                    defaultValue={v.weightKg || ""}
+                    placeholder="Poids kg"
+                    className="field"
+                    aria-label="Poids kg"
+                  />
+                  <input
+                    name="position"
+                    type="number"
+                    defaultValue={v.position}
+                    className="field"
+                    aria-label="Ordre"
+                  />
+                  <SubmitButton pendingLabel="…" className="btn-ghost focus-ring text-sm">
+                    OK
+                  </SubmitButton>
+                </AdminForm>
+                <AdminForm action={deleteVariant}>
+                  <input type="hidden" name="id" value={v.id} />
+                  <SubmitButton
+                    pendingLabel="…"
+                    className="focus-ring rounded p-2.5 text-dulce-ink/40 transition hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden />
+                  </SubmitButton>
+                </AdminForm>
+              </div>
+            ))}
+
+            <AdminForm
+              action={saveVariant}
+              className="grid gap-2 rounded-lg border border-dashed border-dulce-ink/25 p-3 sm:grid-cols-[1.4fr_1fr_1fr_auto]"
+            >
+              <input type="hidden" name="productId" value={product.id} />
+              <input name="name" required placeholder="Ex. Grand — 24 × 10,5 × 32 cm" className="field" />
+              <input name="priceFCFA" type="number" min="1" required placeholder="Prix FCFA" className="field" />
+              <input name="weightKg" type="number" step="0.001" min="0" placeholder="Poids kg" className="field" />
+              <SubmitButton pendingLabel="…" className="btn-ghost focus-ring whitespace-nowrap text-sm">
+                Ajouter
+              </SubmitButton>
+            </AdminForm>
+          </div>
+        </section>
+      )}
 
       {product && product.images.length > 0 && (
         <section className="mt-8 rounded-lg border border-dulce-border bg-white p-5">
