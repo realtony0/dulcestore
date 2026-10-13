@@ -15,9 +15,18 @@ export const SITE = {
   email: "contact@dulce-store.com",
 };
 
-/** URL publique du site. NEXT_PUBLIC_SITE_URL prime (tunnel HTTPS en dev). */
+/**
+ * URL publique du site. NEXT_PUBLIC_SITE_URL prime (tunnel HTTPS en dev).
+ *
+ * Le repli vise le sous-domaine www : c'est l'adresse canonique servie par
+ * l'hébergeur, dulce-store.com y renvoyant par une redirection 308. Or cette
+ * valeur construit l'URL d'IPN communiquée au prestataire de paiement, et rien
+ * ne garantit qu'il suive une redirection — une confirmation de paiement
+ * perdue laisserait la commande bloquée « en attente » alors que le client a
+ * bien payé.
+ */
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? `https://${SITE.domain}`;
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? `https://www.${SITE.domain}`;
 
 export function whatsappLink(message: string): string {
   return `https://wa.me/${SITE.whatsappNumber}?text=${encodeURIComponent(message)}`;
