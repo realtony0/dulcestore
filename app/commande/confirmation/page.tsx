@@ -14,10 +14,15 @@ type Props = { searchParams: Promise<{ ref?: string; simule?: string; paiement?:
 export default async function ConfirmationPage({ searchParams }: Props) {
   const { ref, simule, paiement } = await searchParams;
   const paiementIndisponible = paiement === "indisponible";
-  if (!ref) notFound();
+
+  // PayDunya ajoute « ?token=… » à l'URL de retour même lorsqu'elle contient
+  // déjà une query string : la référence peut donc arriver sous la forme
+  // « DS-ABC123?token=… ». On ne garde que la référence elle-même.
+  const reference = ref?.split("?")[0].trim();
+  if (!reference) notFound();
 
   const order = await prisma.order.findUnique({
-    where: { reference: ref },
+    where: { reference },
     include: { items: true },
   });
   if (!order) notFound();
@@ -79,9 +84,9 @@ export default async function ConfirmationPage({ searchParams }: Props) {
         <div className="mt-8 rounded-2xl border-2 border-amber-400 bg-amber-50 p-5 text-sm">
           <p className="font-bold text-amber-900">Confirmation du paiement en cours</p>
           <p className="mt-1 text-amber-900/80">
-            Votre commande est enregistrée. Nous attendons la confirmation de PayTech — cela prend
-            généralement quelques secondes. Si ce message persiste après plusieurs minutes,
-            contactez-nous sur WhatsApp avec votre référence de commande.
+            Votre commande est enregistrée. Nous attendons la confirmation de notre prestataire de
+            paiement — cela prend généralement quelques secondes. Si ce message persiste après
+            plusieurs minutes, contactez-nous sur WhatsApp avec votre référence de commande.
           </p>
         </div>
       )}

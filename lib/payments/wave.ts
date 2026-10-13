@@ -1,7 +1,7 @@
-import { createPaytechPayment } from "./paytech";
+import { createGatewayPayment } from "./gateway";
 import type { PaymentRequest, PaymentResult } from "./index";
 
-/** Wave via PayTech — voir lib/payments/paytech.ts. */
+/** Wave via l'agrégateur configuré — voir lib/payments/gateway.ts. */
 export async function createWavePayment(req: PaymentRequest): Promise<PaymentResult> {
-  return createPaytechPayment(req, "Wave");
+  return createGatewayPayment(req, "WAVE");
 }

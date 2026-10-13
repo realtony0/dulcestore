@@ -1,7 +1,7 @@
-import { createPaytechPayment } from "./paytech";
+import { createGatewayPayment } from "./gateway";
 import type { PaymentRequest, PaymentResult } from "./index";
 
-/** Orange Money via PayTech — voir lib/payments/paytech.ts. */
+/** Orange Money via l'agrégateur configuré — voir lib/payments/gateway.ts. */
 export async function createOrangeMoneyPayment(req: PaymentRequest): Promise<PaymentResult> {
-  return createPaytechPayment(req, "Orange Money");
+  return createGatewayPayment(req, "ORANGE_MONEY");
 }

@@ -27,6 +27,10 @@ function siteUrl(): string {
   return SITE_URL;
 }
 
+export function isPaytechConfigured(): boolean {
+  return Boolean(process.env.PAYTECH_API_KEY && process.env.PAYTECH_API_SECRET);
+}
+
 /**
  * Pré-remplit la page de paiement PayTech avec les informations déjà saisies
  * sur notre checkout, pour éviter au client de retaper nom et téléphone.

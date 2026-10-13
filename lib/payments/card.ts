@@ -1,7 +1,7 @@
-import { createPaytechPayment } from "./paytech";
+import { createGatewayPayment } from "./gateway";
 import type { PaymentRequest, PaymentResult } from "./index";
 
-/** Carte bancaire via PayTech — voir lib/payments/paytech.ts. */
+/** Carte bancaire via l'agrégateur configuré — voir lib/payments/gateway.ts. */
 export async function createCardPayment(req: PaymentRequest): Promise<PaymentResult> {
-  return createPaytechPayment(req, "Carte Bancaire");
+  return createGatewayPayment(req, "CARTE");
 }
