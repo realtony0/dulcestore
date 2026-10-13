@@ -1,11 +1,24 @@
 import { prisma } from "./db";
 
+/**
+ * `products` ne sert qu'à illustrer la vignette de la catégorie : on prend le
+ * premier produit dont la photo est réellement affichable.
+ *
+ * Sans ce filtre, une seule fiche dont l'adresse de photo est erronée casse
+ * la vignette de toute sa catégorie sur la page d'accueil.
+ */
 export function getCategories() {
   return prisma.category.findMany({
     orderBy: { position: "asc" },
     include: {
       subcategories: { orderBy: { position: "asc" } },
-      products: { orderBy: { position: "asc" }, take: 1 },
+      products: {
+        where: {
+          OR: [{ imageUrl: { startsWith: "http" } }, { imageUrl: { startsWith: "/" } }],
+        },
+        orderBy: { position: "asc" },
+        take: 1,
+      },
       _count: { select: { products: true } },
     },
   });
