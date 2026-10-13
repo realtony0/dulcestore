@@ -109,6 +109,9 @@ export async function POST(request: Request) {
           paymentStatus: "PAYE",
           status: "PAIEMENT_CONFIRME",
           providerRef: invoiceToken,
+          // Le moyen choisi par le client sur la page du prestataire remplace
+          // le nom de l'agrégateur enregistré à la création de la commande.
+          ...(confirmation.paymentMethod ? { paymentMethod: confirmation.paymentMethod } : {}),
         },
       });
       break;

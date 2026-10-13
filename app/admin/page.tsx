@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getShippingMethod, formatFCFA, formatWeight } from "@/lib/shipping";
-import { PAYMENT_METHODS } from "@/lib/site-config";
+import { paymentMethodLabel } from "@/lib/site-config";
 
 export const metadata: Metadata = { title: "Commandes", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -58,7 +58,7 @@ export default async function AdminPage() {
               cls: "bg-slate-200 text-slate-700",
             };
             const shipping = getShippingMethod(order.shippingMethod);
-            const payment = PAYMENT_METHODS.find((m) => m.id === order.paymentMethod);
+            const paiement = paymentMethodLabel(order.paymentMethod);
             const phone = order.customerPhone.replace(/[^\d]/g, "");
 
             return (
@@ -131,7 +131,7 @@ export default async function AdminPage() {
                       Poids estimé : <strong>{formatWeight(order.totalWeightKg)}</strong>
                     </p>
                     <p className="text-sm text-dulce-ink/70">
-                      Réglé par {payment?.name ?? order.paymentMethod}
+                      Réglé par {paiement}
                     </p>
                     {order.providerRef && (
                       <p className="mt-1 font-mono text-xs text-dulce-ink/45">

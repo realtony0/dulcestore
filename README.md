@@ -113,13 +113,22 @@ test. Sans tunnel, le paiement aboutit mais la commande reste bloquée sur
 « Confirmation du paiement en cours » puisque la notification ne peut pas
 atteindre `localhost`.
 
-### Ajouter un moyen de paiement
+### Moyens de paiement
 
-[`lib/payments/gateway.ts`](lib/payments/gateway.ts) fait correspondre chaque
-moyen de paiement à son identifiant chez les deux prestataires (`wave-senegal`
-/ `"Wave"`, etc.). Pour en ajouter un (Free Money, Wizall…), compléter la table
-`CHANNELS` et ajouter l'entrée correspondante à `PAYMENT_METHODS` dans
-[`lib/site-config.ts`](lib/site-config.ts).
+Le client ne choisit pas son moyen de paiement sur le site : il le sélectionne
+sur la page sécurisée du prestataire, qui n'affiche que ce que le compte
+marchand a réellement activé.
+
+C'est volontaire. Demander à PayDunya de n'afficher qu'un seul canal
+(`channels: ["wave-senegal"]`) renvoie une page **sans aucun moyen de
+paiement** dès que ce canal n'est pas disponible — le client se retrouve
+bloqué. Pour ajouter un moyen, il faut donc l'activer chez le prestataire, pas
+le déclarer ici.
+
+`PAYMENT_METHODS` dans [`lib/site-config.ts`](lib/site-config.ts) ne sert plus
+qu'à afficher les logos (pied de page, page Infos, CGV). Le moyen réellement
+employé est enregistré sur la commande par l'IPN, après paiement, et traduit
+par `paymentMethodLabel`.
 
 ## Mise en ligne
 

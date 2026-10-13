@@ -1,8 +1,3 @@
-import type { PaymentMethodId } from "../site-config";
-import { createWavePayment } from "./wave";
-import { createOrangeMoneyPayment } from "./orange-money";
-import { createCardPayment } from "./card";
-
 export type PaymentRequest = {
   reference: string;
   amountFCFA: number;
@@ -20,14 +15,9 @@ export type PaymentResult = {
   simulated: boolean;
 };
 
-const HANDLERS: Record<PaymentMethodId, (req: PaymentRequest) => Promise<PaymentResult>> = {
-  WAVE: createWavePayment,
-  ORANGE_MONEY: createOrangeMoneyPayment,
-  CARTE: createCardPayment,
-};
-
-export function createPayment(method: PaymentMethodId, req: PaymentRequest) {
-  return HANDLERS[method](req);
+export function createPayment(req: PaymentRequest) {
+  // Import différé : gateway.ts importe ce module pour simulatedCheckout.
+  return import("./gateway").then((m) => m.createGatewayPayment(req));
 }
 
 /** Redirection utilisée tant qu'aucune clé API n'est renseignée. */

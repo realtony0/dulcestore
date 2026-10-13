@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getShippingMethod, type Destination } from "@/lib/shipping";
-import { PAYMENT_METHODS, type PaymentMethodId } from "@/lib/site-config";
 import { createPayment } from "@/lib/payments";
+import { gatewayName } from "@/lib/payments/gateway";
 
 type IncomingItem = { productSlug: string; variantId: string | null; quantity: number };
 
@@ -14,7 +14,6 @@ type CheckoutBody = {
   customerCity?: string;
   customerAddress?: string | null;
   shippingMethod?: string;
-  paymentMethod?: string;
   items?: IncomingItem[];
 };
 
@@ -59,11 +58,6 @@ export async function POST(request: Request) {
   if (!shippingMethod) return badRequest("Mode de livraison invalide.");
   if (shippingMethod.destination !== destination) {
     return badRequest("Ce mode de livraison n'est pas disponible pour cette destination.");
-  }
-
-  const paymentMethod = body.paymentMethod as PaymentMethodId;
-  if (!PAYMENT_METHODS.some((m) => m.id === paymentMethod)) {
-    return badRequest("Moyen de paiement invalide.");
   }
 
   const items = body.items ?? [];
@@ -123,7 +117,9 @@ export async function POST(request: Request) {
       shippingMethod: shippingMethod.id,
       productTotalFCFA,
       totalWeightKg,
-      paymentMethod,
+      // L'agrégateur retenu. Le moyen réellement employé par le client est
+      // inconnu à ce stade : il nous est communiqué après paiement, par l'IPN.
+      paymentMethod: gatewayName(),
       items: { create: orderItems },
     },
   });
@@ -134,7 +130,7 @@ export async function POST(request: Request) {
   // muette, et il est recontacté sur WhatsApp pour régler autrement.
   let payment;
   try {
-    payment = await createPayment(paymentMethod, {
+    payment = await createPayment({
       reference,
       amountFCFA: productTotalFCFA,
       customerName,

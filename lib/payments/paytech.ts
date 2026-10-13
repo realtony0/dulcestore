@@ -15,6 +15,11 @@ const PAYTECH_BASE_URL = "https://paytech.sn/api";
 
 export type PaytechTargetPayment = "Wave" | "Orange Money" | "Carte Bancaire";
 
+/**
+ * Sans `target_payment`, PayTech affiche tous les moyens dont dispose le
+ * compte : c'est le client qui choisit sur leur page, comme chez PayDunya.
+ */
+
 type PaytechRequestPaymentResponse = {
   success: 0 | 1;
   token?: string;
@@ -42,7 +47,7 @@ export function isPaytechConfigured(): boolean {
 function withPrefill(
   redirectUrl: string,
   req: PaymentRequest,
-  targetPayment: PaytechTargetPayment,
+  targetPayment: PaytechTargetPayment | null,
 ): string {
   // On ne pré-remplit QUE le nom. Testé le 27 août 2026 : passer le numéro
   // (`nn`, format national) fait déclencher la demande de paiement à PayTech
@@ -52,7 +57,7 @@ function withPrefill(
   try {
     const url = new URL(redirectUrl);
     if (req.customerName) url.searchParams.set("fn", req.customerName);
-    url.searchParams.set("tp", targetPayment);
+    if (targetPayment) url.searchParams.set("tp", targetPayment);
     url.searchParams.set("nac", "0");
     return url.toString();
   } catch {
@@ -64,7 +69,7 @@ function withPrefill(
 
 export async function createPaytechPayment(
   req: PaymentRequest,
-  targetPayment: PaytechTargetPayment,
+  targetPayment: PaytechTargetPayment | null = null,
 ): Promise<PaymentResult> {
   const apiKey = process.env.PAYTECH_API_KEY;
   const apiSecret = process.env.PAYTECH_API_SECRET;
@@ -90,7 +95,7 @@ export async function createPaytechPayment(
       ref_command: req.reference,
       command_name: `Dulce Store — ${req.reference}`,
       env,
-      target_payment: targetPayment,
+      ...(targetPayment ? { target_payment: targetPayment } : {}),
       ipn_url: `${site}/api/webhooks/paytech`,
       success_url: `${site}/commande/confirmation?ref=${req.reference}`,
       cancel_url: `${site}/panier`,

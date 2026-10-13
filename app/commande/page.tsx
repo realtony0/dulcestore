@@ -12,7 +12,8 @@ import {
   methodsForDestination,
   type Destination,
 } from "@/lib/shipping";
-import { PAYMENT_METHODS, type PaymentMethodId } from "@/lib/site-config";
+import { PAYMENT_METHODS } from "@/lib/site-config";
+import { Lock } from "lucide-react";
 import { PaymentIcon, ShippingIcon } from "@/components/icons";
 
 export default function CheckoutPage() {
@@ -21,7 +22,6 @@ export default function CheckoutPage() {
 
   const [destination, setDestination] = useState<Destination>("SENEGAL");
   const [shippingMethodId, setShippingMethodId] = useState("FRET");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodId>("WAVE");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,7 +70,6 @@ export default function CheckoutPage() {
           customerAddress: formData.get("customerAddress"),
           destination,
           shippingMethod: shippingMethodId,
-          paymentMethod,
           items: lines.map((l) => ({
             productSlug: l.productSlug,
             variantId: l.variantId,
@@ -239,29 +238,18 @@ export default function CheckoutPage() {
             )}
           </section>
 
-          <section>
-            <h2 className="flex items-center gap-3 text-xl font-bold">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-dulce-orange text-sm font-extrabold text-white">
-                3
-              </span>
-              Paiement des produits
+          <section className="rounded-2xl border border-dulce-ink/10 bg-white p-5 shadow-soft">
+            <h2 className="flex items-center gap-3 text-base font-bold">
+              <Lock className="h-5 w-5 shrink-0 text-dulce-orange" aria-hidden />
+              Paiement sécurisé
             </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <p className="mt-2 text-sm leading-relaxed text-dulce-ink/70">
+              Vous choisirez votre moyen de paiement à l&apos;étape suivante, sur la page sécurisée
+              de notre prestataire. Nous n&apos;avons accès à aucune de vos données bancaires.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
               {PAYMENT_METHODS.map((method) => (
-                <button
-                  key={method.id}
-                  type="button"
-                  onClick={() => setPaymentMethod(method.id)}
-                  className={`option-card focus-ring ${
-                    paymentMethod === method.id ? "option-card-active" : "option-card-idle"
-                  }`}
-                >
-                  <p className="flex items-center gap-2 font-bold">
-                    <PaymentIcon method={method.icon} />
-                    {method.name}
-                  </p>
-                  <p className="mt-0.5 text-sm text-dulce-ink/60">{method.hint}</p>
-                </button>
+                <PaymentIcon key={method.id} method={method.icon} className="h-5" />
               ))}
             </div>
           </section>

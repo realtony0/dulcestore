@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { CheckCircle2 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getShippingMethod, EUROPE_USA_STEPS, formatFCFA, formatWeight } from "@/lib/shipping";
-import { PAYMENT_METHODS, SITE, whatsappLink } from "@/lib/site-config";
+import { SITE, paymentMethodLabel, whatsappLink } from "@/lib/site-config";
 import { ClearCart } from "@/components/clear-cart";
 
 export const metadata: Metadata = { title: "Commande confirmée" };
@@ -28,7 +28,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
   if (!order) notFound();
 
   const shippingMethod = getShippingMethod(order.shippingMethod);
-  const paymentMethod = PAYMENT_METHODS.find((m) => m.id === order.paymentMethod);
+  const paiementLabel = paymentMethodLabel(order.paymentMethod);
   const isInternational = order.destination === "EUROPE_USA";
 
   return (
@@ -75,7 +75,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
           <p className="mt-1 text-amber-900/80">
             Aucune clé d&apos;API de paiement n&apos;est encore configurée : la commande a bien été
             enregistrée, mais aucun montant n&apos;a été débité. Voir le README pour brancher{" "}
-            {paymentMethod?.name ?? "le prestataire"}.
+            {paiementLabel}.
           </p>
         </div>
       )}
@@ -124,7 +124,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
           </span>
         </div>
         <p className="mt-1 text-sm text-dulce-ink/60">
-          Réglé par {paymentMethod?.name ?? order.paymentMethod} · Poids total estimé :{" "}
+          Réglé par {paiementLabel} · Poids total estimé :{" "}
           {formatWeight(order.totalWeightKg)}
         </p>
       </section>

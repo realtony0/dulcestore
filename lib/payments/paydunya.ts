@@ -17,9 +17,6 @@ import { SITE, SITE_URL } from "../site-config";
  * que les clés de test soient remplacées par celles de production.
  */
 
-/** Identifiants de canaux documentés : developers.paydunya.com/doc/FR/introduction */
-export type PaydunyaChannel = "wave-senegal" | "orange-money-senegal" | "card";
-
 type Credentials = { masterKey: string; privateKey: string; token: string };
 
 type Mode = "test" | "live";
@@ -43,6 +40,7 @@ type ConfirmInvoiceResponse = {
   mode?: string;
   invoice?: { token?: string; total_amount?: number | string };
   custom_data?: Record<string, unknown>;
+  customer?: { payment_method?: string | null };
 };
 
 /**
@@ -100,16 +98,9 @@ export function isGenuinePaydunyaHash(hash: string | undefined): boolean {
   return timingSafeEqual(expected, received);
 }
 
-export async function createPaydunyaPayment(
-  req: PaymentRequest,
-  channel: PaydunyaChannel,
-): Promise<PaymentResult> {
+export async function createPaydunyaPayment(req: PaymentRequest): Promise<PaymentResult> {
   const c = credentials();
   if (!c) return simulatedCheckout(req.reference);
-
-  // Conservé pour le diagnostic : on sait quel moyen le client avait choisi
-  // chez nous, même si la page PayDunya les propose tous.
-  void channel;
 
   const amount = String(req.amountFCFA);
 
@@ -134,17 +125,10 @@ export async function createPaydunyaPayment(
           phone: req.customerPhone,
           ...(req.customerEmail ? { email: req.customerEmail } : {}),
         },
-        // On n'envoie volontairement pas `channels`.
-        //
-        // Restreindre la page au seul moyen choisi sur notre checkout paraît
-        // plus fluide, mais si ce canal n'est pas actif sur le compte marchand,
-        // PayDunya affiche une page SANS aucun moyen de paiement : le client ne
-        // peut rien faire. C'est ce qui s'est produit au passage en production,
-        // les canaux activés en mode test ne l'étant pas en mode live.
-        //
-        // Sans restriction, PayDunya propose ce que le compte a réellement
-        // activé. Le moyen choisi par le client reste enregistré sur la
-        // commande, il sert à l'information du vendeur.
+        // On n'envoie pas `channels` : le client choisit son moyen de paiement
+        // sur la page PayDunya, qui propose ce que le compte a réellement
+        // activé. Restreindre à un seul canal renvoie une page sans aucun
+        // moyen de paiement dès que ce canal n'est pas disponible.
         total_amount: req.amountFCFA,
         description: `${SITE.name} — commande ${req.reference}`,
       },
@@ -185,6 +169,8 @@ export type PaydunyaConfirmation = {
   reference: string | null;
   totalAmountFCFA: number | null;
   failReason: string | null;
+  /** Moyen réellement utilisé par le client, connu seulement après paiement. */
+  paymentMethod: string | null;
 };
 
 /**
@@ -218,5 +204,6 @@ export async function confirmPaydunyaInvoice(
     reference: typeof reference === "string" ? reference : null,
     totalAmountFCFA: Number.isFinite(amount) ? amount : null,
     failReason: data.fail_reason || null,
+    paymentMethod: data.customer?.payment_method || null,
   };
 }

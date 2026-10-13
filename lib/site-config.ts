@@ -85,9 +85,43 @@ export const HOSTING = {
 
 export type PaymentMethodId = "WAVE" | "ORANGE_MONEY" | "CARTE";
 
-/** `icon` référence une clé de components/icons.tsx (PAYMENT_ICONS). */
+/**
+ * Moyens de paiement annoncés au client (pied de page, page Infos, CGV).
+ *
+ * Ce n'est plus un choix fait sur notre site : le client sélectionne son moyen
+ * sur la page sécurisée du prestataire, qui n'affiche que ce qui est
+ * réellement disponible. Cette liste sert uniquement à l'affichage.
+ *
+ * `icon` référence une clé de components/icons.tsx (PAYMENT_LOGOS).
+ */
 export const PAYMENT_METHODS: { id: PaymentMethodId; name: string; icon: PaymentMethodId; hint: string }[] = [
   { id: "WAVE", name: "Wave", icon: "WAVE", hint: "Paiement mobile instantané" },
   { id: "ORANGE_MONEY", name: "Orange Money", icon: "ORANGE_MONEY", hint: "Paiement mobile instantané" },
   { id: "CARTE", name: "Carte bancaire", icon: "CARTE", hint: "Visa, Mastercard" },
 ];
+
+/**
+ * Libellé lisible du moyen de paiement enregistré sur une commande.
+ *
+ * Avant paiement on ne connaît que l'agrégateur ; après paiement, le
+ * prestataire nous renvoie le moyen réellement utilisé, sous ses propres
+ * identifiants (« wave-senegal », « card »…).
+ */
+export function paymentMethodLabel(value: string): string {
+  const connus: Record<string, string> = {
+    PAYDUNYA: "Paiement en ligne",
+    PAYTECH: "Paiement en ligne",
+    SIMULE: "Paiement simulé",
+    WAVE: "Wave",
+    ORANGE_MONEY: "Orange Money",
+    CARTE: "Carte bancaire",
+    "wave-senegal": "Wave",
+    "orange-money-senegal": "Orange Money",
+    "free-money-senegal": "Free Money",
+    "wizall-senegal": "Wizall",
+    "expresso-sn": "Expresso",
+    card: "Carte bancaire",
+  };
+  const cle = value.trim();
+  return connus[cle] ?? connus[cle.toLowerCase()] ?? cle;
+}
