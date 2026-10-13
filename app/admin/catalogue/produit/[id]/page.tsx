@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { isDisplayableImage } from "@/lib/images";
 import {
   saveProduct,
   deleteProductImage,
@@ -244,7 +245,7 @@ export default async function ProduitFormPage({ params }: Props) {
         <div className="rounded-lg border border-dulce-border bg-white p-5">
           <p className="text-xs font-bold uppercase tracking-wider text-dulce-ink/40">Photos</p>
 
-          {product?.imageUrl && (
+          {isDisplayableImage(product?.imageUrl) && (
             <div className="mt-4 flex items-center gap-4">
               <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border-2 border-dulce-orange bg-dulce-cream">
                 <Image src={product.imageUrl} alt="" fill sizes="96px" className="object-cover" />
@@ -387,7 +388,9 @@ export default async function ProduitFormPage({ params }: Props) {
               return (
                 <div key={img.id} className="overflow-hidden rounded-lg border border-dulce-border">
                   <div className="relative aspect-square bg-dulce-cream">
-                    <Image src={img.url} alt="" fill sizes="180px" className="object-cover" />
+                    {isDisplayableImage(img.url) && (
+                      <Image src={img.url} alt="" fill sizes="180px" className="object-cover" />
+                    )}
                     {principale && (
                       <span className="absolute left-2 top-2 rounded-full bg-dulce-orange px-2 py-0.5 text-[0.65rem] font-bold text-white">
                         Principale

@@ -6,6 +6,7 @@ import { Check } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/lib/cart-context";
 import { formatFCFA } from "@/lib/shipping";
+import { isDisplayableImage } from "@/lib/images";
 
 type Variant = { id: string; name: string; priceFCFA: number; weightKg: number };
 type ProductImage = { id: string; url: string; kind: string };
@@ -31,13 +32,16 @@ export function ProductDetail(p: Props) {
   const [variantId, setVariantId] = useState(p.variants[0]?.id ?? null);
   const [quantity, setQuantity] = useState(p.minOrderQty);
   const [added, setAdded] = useState(false);
+  const [inCart, setInCart] = useState(false);
 
   const variant = p.variants.find((v) => v.id === variantId) ?? null;
   const unitPrice = variant?.priceFCFA ?? p.priceFCFA;
   const unitWeight = variant?.weightKg ?? p.weightKg;
 
   const otherImages = p.images.filter((i) => i.url !== p.imageUrl);
-  const gallery = [{ id: "main", url: p.imageUrl, kind: "photo" }, ...otherImages].filter((i) => i.url);
+  const gallery = [{ id: "main", url: p.imageUrl, kind: "photo" }, ...otherImages].filter((i) =>
+    isDisplayableImage(i.url),
+  );
   const fiches = gallery.filter((i) => i.kind === "fiche");
   const [active, setActive] = useState(0);
 
@@ -54,6 +58,7 @@ export function ProductDetail(p: Props) {
       quantity,
     });
     setAdded(true);
+    setInCart(true);
     setTimeout(() => setAdded(false), 2500);
   }
 
@@ -99,7 +104,7 @@ export function ProductDetail(p: Props) {
 
       <div>
         <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">{p.name}</h1>
-        <p className="mt-2.5 text-lg text-dulce-orange">{p.tagline}</p>
+        {p.tagline.trim() && <p className="mt-2.5 text-lg text-dulce-orange">{p.tagline}</p>}
 
         <p className="mt-6 text-4xl font-extrabold text-dulce-orange">{formatFCFA(unitPrice)}</p>
         {p.minOrderQty > 1 && (
@@ -177,9 +182,12 @@ export function ProductDetail(p: Props) {
           </button>
         </div>
 
-        {added && (
-          <Link href="/panier" className="mt-3 block text-center text-sm font-semibold text-dulce-orange hover:underline">
-            Voir mon panier →
+        {inCart && (
+          <Link
+            href="/panier"
+            className="focus-ring mt-3 block rounded-lg border border-dulce-orange py-2.5 text-center text-sm font-bold text-dulce-orange transition hover:bg-dulce-orange-light"
+          >
+            Voir mon panier et commander →
           </Link>
         )}
 
@@ -199,10 +207,12 @@ export function ProductDetail(p: Props) {
           )}
         </div>
 
-        <div className="mt-8">
-          <h2 className="font-bold">Description</h2>
-          <p className="mt-2 whitespace-pre-line text-dulce-ink/75">{p.description}</p>
-        </div>
+        {p.description.trim() && (
+          <div className="mt-8">
+            <h2 className="font-bold">Description</h2>
+            <p className="mt-2 whitespace-pre-line text-dulce-ink/75">{p.description}</p>
+          </div>
+        )}
 
         {p.specs.length > 0 && (
           <div className="mt-8">

@@ -83,12 +83,11 @@ export const HOSTING = {
   pays: "États-Unis",
 };
 
-export type PaymentMethodId = "WAVE" | "ORANGE_MONEY" | "CARTE" | "PAYPAL";
+export type PaymentMethodId = "WAVE" | "ORANGE_MONEY" | "CARTE";
 
 /** `icon` référence une clé de components/icons.tsx (PAYMENT_ICONS). */
 export const PAYMENT_METHODS: { id: PaymentMethodId; name: string; icon: PaymentMethodId; hint: string }[] = [
   { id: "WAVE", name: "Wave", icon: "WAVE", hint: "Paiement mobile instantané" },
   { id: "ORANGE_MONEY", name: "Orange Money", icon: "ORANGE_MONEY", hint: "Paiement mobile instantané" },
   { id: "CARTE", name: "Carte bancaire", icon: "CARTE", hint: "Visa, Mastercard" },
-  { id: "PAYPAL", name: "PayPal", icon: "PAYPAL", hint: "Pour les paiements depuis l'étranger" },
 ];

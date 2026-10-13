@@ -5,9 +5,10 @@ import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { formatFCFA, formatWeight } from "@/lib/shipping";
+import { isDisplayableImage } from "@/lib/images";
 
 export default function CartPage() {
-  const { lines, setQuantity, remove, totalFCFA, totalWeightKg, ready } = useCart();
+  const { lines, setQuantity, remove, clear, totalFCFA, totalWeightKg, ready } = useCart();
 
   if (!ready) return <div className="mx-auto max-w-4xl px-4 py-16" />;
 
@@ -28,10 +29,21 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
-      <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Votre panier</h1>
-      <p className="mt-2 text-dulce-ink/60">
-        {lines.length} article{lines.length > 1 ? "s" : ""}
-      </p>
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Votre panier</h1>
+          <p className="mt-2 text-dulce-ink/60">
+            {lines.length} article{lines.length > 1 ? "s" : ""}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => clear()}
+          className="focus-ring rounded text-sm text-dulce-ink/50 transition hover:text-red-600"
+        >
+          Vider le panier
+        </button>
+      </div>
 
       <div className="mt-8 space-y-4">
         {lines.map((line) => (
@@ -40,7 +52,7 @@ export default function CartPage() {
             className="flex gap-4 rounded-2xl border border-dulce-ink/10 p-4 shadow-soft transition hover:border-dulce-orange/30"
           >
             <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-dulce-cream">
-              {line.imageUrl && (
+              {isDisplayableImage(line.imageUrl) && (
                 <Image src={line.imageUrl} alt={line.productName} fill sizes="96px" className="object-cover" />
               )}
             </div>

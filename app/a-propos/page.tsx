@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Package, Store, Truck } from "lucide-react";
 import { SITE } from "@/lib/site-config";
+import { isDisplayableImage } from "@/lib/images";
 import { getCategories } from "@/lib/queries";
 
 export const metadata: Metadata = {
@@ -67,7 +68,7 @@ export default async function AProposPage() {
               className="card focus-ring group overflow-hidden"
             >
               <div className="relative aspect-[5/4] overflow-hidden bg-dulce-cream">
-                {cat.products[0]?.imageUrl && (
+                {isDisplayableImage(cat.products[0]?.imageUrl) && (
                   <Image
                     src={cat.products[0].imageUrl}
                     alt={cat.name}

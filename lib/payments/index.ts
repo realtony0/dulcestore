@@ -2,7 +2,6 @@ import type { PaymentMethodId } from "../site-config";
 import { createWavePayment } from "./wave";
 import { createOrangeMoneyPayment } from "./orange-money";
 import { createCardPayment } from "./card";
-import { createPaypalPayment } from "./paypal";
 
 export type PaymentRequest = {
   reference: string;
@@ -25,7 +24,6 @@ const HANDLERS: Record<PaymentMethodId, (req: PaymentRequest) => Promise<Payment
   WAVE: createWavePayment,
   ORANGE_MONEY: createOrangeMoneyPayment,
   CARTE: createCardPayment,
-  PAYPAL: createPaypalPayment,
 };
 
 export function createPayment(method: PaymentMethodId, req: PaymentRequest) {

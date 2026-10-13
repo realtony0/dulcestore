@@ -41,8 +41,6 @@ qui réunit ces moyens derrière une seule API. Deux sont branchés :
 | [PayDunya](https://paydunya.com) | principal | `PAYDUNYA_MASTER_KEY`, `PAYDUNYA_PRIVATE_KEY`, `PAYDUNYA_TOKEN`, `PAYDUNYA_MODE` |
 | [PayTech](https://paytech.sn) | secours | `PAYTECH_API_KEY`, `PAYTECH_API_SECRET`, `PAYTECH_ENV` |
 
-PayPal est géré séparément (aucun des deux ne le couvre).
-
 [`lib/payments/gateway.ts`](lib/payments/gateway.ts) choisit le prestataire :
 PayDunya dès que ses clés sont renseignées, PayTech sinon. `PAYMENT_PROVIDER`
 (`paydunya` ou `paytech`) force l'un des deux, ce qui permet de basculer sans

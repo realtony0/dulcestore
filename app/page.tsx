@@ -4,6 +4,7 @@ import { ArrowRight, Package, ShieldCheck, Timer } from "lucide-react";
 import { getCategories, getFeaturedProducts } from "@/lib/queries";
 import { ProductCard } from "@/components/product-card";
 import { SITE } from "@/lib/site-config";
+import { isDisplayableImage } from "@/lib/images";
 
 /** Visuels du hero : deux photos propres, alignées. */
 const HERO_IMAGES = [
@@ -88,7 +89,7 @@ export default async function HomePage() {
               className="card focus-ring group overflow-hidden"
             >
               <div className="relative aspect-[5/4] overflow-hidden bg-dulce-cream">
-                {cat.products[0]?.imageUrl && (
+                {isDisplayableImage(cat.products[0]?.imageUrl) && (
                   <Image
                     src={cat.products[0].imageUrl}
                     alt={cat.name}
@@ -152,7 +153,7 @@ export default async function HomePage() {
               {
                 n: "1",
                 t: "Vous commandez sur le site",
-                d: "Vous payez uniquement le prix des produits, par Wave, Orange Money, carte bancaire ou PayPal.",
+                d: "Vous payez uniquement le prix des produits, par Wave, Orange Money ou carte bancaire.",
               },
               {
                 n: "2",

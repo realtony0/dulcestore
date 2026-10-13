@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { prisma } from "@/lib/db";
+import { isDisplayableImage } from "@/lib/images";
 import { formatFCFA } from "@/lib/shipping";
 import { AdminForm, SubmitButton } from "@/components/admin-form";
 import {
@@ -61,7 +62,7 @@ export default async function CataloguePage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded bg-dulce-cream">
-                        {p.imageUrl && (
+                        {isDisplayableImage(p.imageUrl) && (
                           <Image src={p.imageUrl} alt="" fill sizes="44px" className="object-cover" />
                         )}
                       </div>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatFCFA } from "@/lib/shipping";
+import { isDisplayableImage } from "@/lib/images";
 
 type Props = {
   slug: string;
@@ -26,7 +27,7 @@ export function ProductCard({
   return (
     <Link href={`/produit/${slug}`} className="card focus-ring group flex flex-col overflow-hidden">
       <div className="relative aspect-square overflow-hidden bg-dulce-cream">
-        {imageUrl ? (
+        {isDisplayableImage(imageUrl) ? (
           <Image
             src={imageUrl}
             alt={name}

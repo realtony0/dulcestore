@@ -9,7 +9,6 @@ import type { ShippingMethodId } from "@/lib/shipping";
  *   orange-money.svg  — Wikimedia Commons (marque Orange Money)
  *   visa.svg          — Wikimedia Commons (marque Visa 2021→)
  *   mastercard.svg    — Wikimedia Commons (marque Mastercard)
- *   paypal.png        — paypalobjects.com (CDN officiel PayPal)
  * La carte bancaire affiche les deux réseaux acceptés côte à côte.
  */
 const PAYMENT_LOGOS: Record<PaymentMethodId, { src: string; w: number; h: number; alt: string }[]> = {
@@ -19,7 +18,6 @@ const PAYMENT_LOGOS: Record<PaymentMethodId, { src: string; w: number; h: number
     { src: "/paiement/visa.svg", w: 1000, h: 325, alt: "Visa" },
     { src: "/paiement/mastercard.svg", w: 132, h: 103, alt: "Mastercard" },
   ],
-  PAYPAL: [{ src: "/paiement/paypal.png", w: 200, h: 51, alt: "PayPal" }],
 };
 
 export function PaymentIcon({
