@@ -64,6 +64,15 @@ réel n'est déclenché.
 3. Passer à `live` seulement après validation KYC du compte **et** en ayant
    remplacé les clés de test par celles de production : ce sont deux jeux de
    clés distincts.
+4. L'application doit aussi être basculée en production dans le dashboard
+   PayDunya (« Activer le mode production »). Tant qu'elle reste en mode test,
+   l'API refuse les clés `live_` avec `4003 Logon to your PayDunya account and
+   set your application mode to live`.
+
+PayDunya refuse tout encaissement **inférieur à 200 FCFA** (`4003 Invalid Total
+Amount`). Aucun produit du catalogue n'est concerné : les articles les moins
+chers (95 à 99 FCFA) sont vendus par quantités minimales de 100 à 200 pièces.
+Y penser avant de créer un produit bon marché sans quantité minimale.
 
 Implémentation : [`lib/payments/paydunya.ts`](lib/payments/paydunya.ts), d'après
 la doc officielle <https://developers.paydunya.com/doc/FR/http_json>.
