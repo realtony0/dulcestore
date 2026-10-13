@@ -9,6 +9,8 @@ import { getAllProductSlugs, getCategories } from "@/lib/queries";
  * déclarait : les moteurs devaient découvrir les 81 fiches produits à la
  * trace, au lieu de recevoir la liste.
  */
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [products, categories] = await Promise.all([getAllProductSlugs(), getCategories()]);
 
