@@ -48,19 +48,19 @@ export function whatsappLink(message: string): string {
  */
 export const LEGAL = {
   /** Raison sociale ou nom et prénom si entreprise individuelle. */
-  raisonSociale: "",
+  raisonSociale: "Engetras",
   /** Ex. « SARL », « SUARL », « Entreprise individuelle ». */
-  formeJuridique: "",
+  formeJuridique: "Entreprise individuelle",
   /** Montant en FCFA, vide si entreprise individuelle. */
   capitalSocial: "",
   /** Registre du Commerce et du Crédit Mobilier. */
-  rccm: "",
+  rccm: "SN.DKR.2019.A.22889",
   /** Numéro d'Identification National des Entreprises et Associations. */
-  ninea: "",
+  ninea: "007483142",
   /** Adresse complète du siège (rue, quartier, ville, pays). */
-  siege: "",
+  siege: "Fass Noflaye, Rufisque, Sénégal",
   /** Responsable de la publication du site. */
-  directeurPublication: "",
+  directeurPublication: "Hadiatou Diallo",
   /** Date de dernière mise à jour des pages légales. */
   miseAJour: "13 octobre 2026",
 };

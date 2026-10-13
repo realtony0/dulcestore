@@ -21,7 +21,9 @@ export default function MentionsLegalesPage() {
         <dl className="divide-y divide-dulce-ink/10 overflow-hidden rounded-lg border border-dulce-border">
           <LegalField label="Raison sociale" value={LEGAL.raisonSociale} />
           <LegalField label="Forme juridique" value={LEGAL.formeJuridique} />
-          <LegalField label="Capital social" value={LEGAL.capitalSocial} />
+          {LEGAL.capitalSocial.trim() && (
+            <LegalField label="Capital social" value={LEGAL.capitalSocial} />
+          )}
           <LegalField label="Siège social" value={LEGAL.siege} />
           <LegalField label="RCCM" value={LEGAL.rccm} />
           <LegalField label="NINEA" value={LEGAL.ninea} />
@@ -55,8 +57,8 @@ export default function MentionsLegalesPage() {
       <LegalSection title="3. Propriété intellectuelle">
         <p>
           La structure du site, son identité visuelle, ses textes et sa mise en page sont la
-          propriété de {SITE.name}. Toute reproduction ou réutilisation sans autorisation écrite
-          préalable est interdite.
+          propriété de {LEGAL.raisonSociale.trim() || SITE.name}. Toute reproduction ou
+          réutilisation sans autorisation écrite préalable est interdite.
         </p>
         <p>
           Les photographies et fiches techniques des produits proviennent de nos fournisseurs et

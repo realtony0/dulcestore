@@ -23,9 +23,10 @@ export default function CgvPage() {
       <LegalSection title="1. Objet et acceptation">
         <p>
           Les présentes conditions régissent les ventes conclues sur {SITE.domain} entre{" "}
-          {vendeur} (« le Vendeur ») et toute personne passant commande (« le Client »).
-          Valider une commande vaut acceptation pleine et entière des présentes conditions, dans
-          leur version en ligne au jour de la commande.
+          <strong>{vendeur}</strong>, qui exploite la boutique {SITE.name} (« le Vendeur »), et
+          toute personne passant commande (« le Client »). Valider une commande vaut acceptation
+          pleine et entière des présentes conditions, dans leur version en ligne au jour de la
+          commande.
         </p>
       </LegalSection>
 
