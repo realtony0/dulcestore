@@ -51,6 +51,24 @@ function num(form: FormData, key: string, fallback = 0): number {
   return Number.isFinite(v) ? v : fallback;
 }
 
+/**
+ * Une photo est soit une URL absolue, soit un chemin servi depuis public/.
+ *
+ * Sans ce garde-fou, un texte saisi dans le mauvais champ du formulaire est
+ * enregistré tel quel : la fiche produit tente alors de charger une image à
+ * une adresse qui n'existe pas, et s'affiche cassée en boutique. C'est arrivé
+ * avec des coloris saisis à la place de l'adresse de la photo.
+ */
+function isImageReference(value: string): boolean {
+  if (value.startsWith("/")) return !value.includes(" ");
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 function refresh() {
   revalidatePath("/", "layout");
 }
@@ -171,6 +189,12 @@ export async function saveProduct(_prev: ActionResult, formData: FormData): Prom
 
     const imageUrl = str(formData, "imageUrl") || uploaded[0] || "";
     if (!imageUrl) return { error: "Une photo est obligatoire (upload ou URL)." };
+    if (!isImageReference(imageUrl)) {
+      return {
+        error:
+          "Le champ photo attend une adresse d'image (https://… ou /chemin), pas du texte libre. Les coloris se saisissent dans leur propre champ.",
+      };
+    }
 
     const subcategoryId = str(formData, "subcategoryId");
     const colors = str(formData, "colors");
