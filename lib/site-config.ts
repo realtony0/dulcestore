@@ -24,6 +24,56 @@ export function whatsappLink(message: string): string {
 }
 
 
+/**
+ * Identité légale de l'entreprise, affichée dans les mentions légales et les CGV.
+ *
+ * La loi sénégalaise n° 2008-08 sur les transactions électroniques (article 10)
+ * impose d'afficher la raison sociale, l'adresse complète de l'établissement,
+ * l'adresse e-mail et le téléphone ; pour une société immatriculée s'y ajoutent
+ * le numéro RCCM, le capital social et l'adresse du siège, ainsi que le NINEA
+ * pour les assujettis à la TVA.
+ *
+ * ⚠️ CES CHAMPS DOIVENT ÊTRE REMPLIS AVANT D'ENCAISSER DE VRAIS PAIEMENTS.
+ * Tant qu'ils sont vides, les pages légales affichent un avertissement visible
+ * au lieu d'une information fausse.
+ */
+export const LEGAL = {
+  /** Raison sociale ou nom et prénom si entreprise individuelle. */
+  raisonSociale: "",
+  /** Ex. « SARL », « SUARL », « Entreprise individuelle ». */
+  formeJuridique: "",
+  /** Montant en FCFA, vide si entreprise individuelle. */
+  capitalSocial: "",
+  /** Registre du Commerce et du Crédit Mobilier. */
+  rccm: "",
+  /** Numéro d'Identification National des Entreprises et Associations. */
+  ninea: "",
+  /** Adresse complète du siège (rue, quartier, ville, pays). */
+  siege: "",
+  /** Responsable de la publication du site. */
+  directeurPublication: "",
+  /** Date de dernière mise à jour des pages légales. */
+  miseAJour: "13 octobre 2026",
+};
+
+/** true quand toutes les mentions obligatoires sont renseignées. */
+export function isLegalComplete(): boolean {
+  return [
+    LEGAL.raisonSociale,
+    LEGAL.rccm,
+    LEGAL.ninea,
+    LEGAL.siege,
+    LEGAL.directeurPublication,
+  ].every((v) => v.trim().length > 0);
+}
+
+/** Hébergeur du site, à mentionner dans les mentions légales. */
+export const HOSTING = {
+  nom: "Vercel Inc.",
+  site: "https://vercel.com",
+  pays: "États-Unis",
+};
+
 export type PaymentMethodId = "WAVE" | "ORANGE_MONEY" | "CARTE" | "PAYPAL";
 
 /** `icon` référence une clé de components/icons.tsx (PAYMENT_ICONS). */

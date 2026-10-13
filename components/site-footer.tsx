@@ -4,6 +4,12 @@ import { MessageCircle } from "lucide-react";
 import { SITE, PAYMENT_METHODS, whatsappLink } from "@/lib/site-config";
 import { PaymentIcon } from "@/components/icons";
 
+const LEGAL_LINKS = [
+  { href: "/cgv", label: "Conditions générales de vente" },
+  { href: "/mentions-legales", label: "Mentions légales" },
+  { href: "/confidentialite", label: "Confidentialité" },
+];
+
 const CATEGORIES = [
   { href: "/boutique?categorie=cuisine-pro", label: "Cuisine Pro" },
   { href: "/boutique?categorie=packaging", label: "Packaging" },
@@ -74,9 +80,18 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-white/10">
-        <p className="mx-auto max-w-7xl px-4 py-5 text-center text-xs text-white/40 sm:text-left">
-          © {new Date().getFullYear()} {SITE.name}
-        </p>
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-5 text-xs text-white/40 sm:flex-row sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} {SITE.name}
+          </p>
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            {LEGAL_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} className="transition hover:text-white/70">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </div>
     </footer>
   );
