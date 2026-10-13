@@ -107,6 +107,10 @@ export async function createPaydunyaPayment(
   const c = credentials();
   if (!c) return simulatedCheckout(req.reference);
 
+  // Conservé pour le diagnostic : on sait quel moyen le client avait choisi
+  // chez nous, même si la page PayDunya les propose tous.
+  void channel;
+
   const amount = String(req.amountFCFA);
 
   const response = await fetch(`${apiBaseUrl()}/checkout-invoice/create`, {
@@ -130,8 +134,17 @@ export async function createPaydunyaPayment(
           phone: req.customerPhone,
           ...(req.customerEmail ? { email: req.customerEmail } : {}),
         },
-        // Restreint la page de paiement au moyen choisi sur notre checkout.
-        channels: [channel],
+        // On n'envoie volontairement pas `channels`.
+        //
+        // Restreindre la page au seul moyen choisi sur notre checkout paraît
+        // plus fluide, mais si ce canal n'est pas actif sur le compte marchand,
+        // PayDunya affiche une page SANS aucun moyen de paiement : le client ne
+        // peut rien faire. C'est ce qui s'est produit au passage en production,
+        // les canaux activés en mode test ne l'étant pas en mode live.
+        //
+        // Sans restriction, PayDunya propose ce que le compte a réellement
+        // activé. Le moyen choisi par le client reste enregistré sur la
+        // commande, il sert à l'information du vendeur.
         total_amount: req.amountFCFA,
         description: `${SITE.name} — commande ${req.reference}`,
       },
