@@ -5,7 +5,7 @@ import { ProductCard } from "@/components/product-card";
 
 type Props = { searchParams: Promise<{ q?: string }> };
 
-export const metadata: Metadata = { title: "Recherche" };
+export const metadata: Metadata = { title: "Recherche", robots: { index: false, follow: false } };
 
 export default async function SearchPage({ searchParams }: Props) {
   const { q } = await searchParams;

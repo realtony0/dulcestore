@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "À propos",
   description:
     "Dulce Store : une plateforme de vente qui source en Chine pour les particuliers comme pour les professionnels, avec livraison au Sénégal et à l'international.",
+  alternates: { canonical: "/a-propos" }
 };
 
 const PILLARS = [

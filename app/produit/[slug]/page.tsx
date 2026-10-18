@@ -3,6 +3,14 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getProductBySlug } from "@/lib/queries";
 import { ProductDetail } from "@/components/product-detail";
+import {
+  JsonLd,
+  absoluteUrl,
+  breadcrumbJsonLd,
+  productJsonLd,
+  shareDescription,
+  shareImage,
+} from "@/lib/seo";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -28,7 +36,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return {};
-  return { title: product.name, description: product.tagline };
+
+  const description = shareDescription({
+    name: product.name,
+    tagline: product.tagline,
+    description: product.description,
+    categoryName: product.category.name,
+  });
+  const image = shareImage(product.imageUrl);
+  const url = absoluteUrl(`/produit/${product.slug}`);
+
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      url,
+      title: product.name,
+      description,
+      // La photo du produit, et non le logo : c'est elle qui s'affiche dans
+      // l'aperçu lorsqu'un client partage le lien sur WhatsApp.
+      images: [{ url: image, alt: product.name }],
+    },
+    twitter: { card: "summary_large_image", title: product.name, description, images: [image] },
+  };
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -36,8 +68,35 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
+  const description = shareDescription({
+    name: product.name,
+    tagline: product.tagline,
+    description: product.description,
+    categoryName: product.category.name,
+  });
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
+      <JsonLd
+        data={productJsonLd({
+          slug: product.slug,
+          name: product.name,
+          description,
+          imageUrls: [product.imageUrl, ...product.images.map((i) => i.url)],
+          priceFCFA: product.priceFCFA,
+          inStock: product.inStock,
+          categoryName: product.category.name,
+          variantCount: product.variants.length,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Accueil", path: "/" },
+          { name: product.category.name, path: `/boutique?categorie=${product.category.slug}` },
+          { name: product.name, path: `/produit/${product.slug}` },
+        ])}
+      />
+
       <nav className="mb-8 text-sm text-dulce-ink/60">
         <Link href="/" className="hover:text-dulce-orange">
           Accueil

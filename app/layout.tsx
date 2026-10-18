@@ -5,6 +5,7 @@ import { CartProvider } from "@/lib/cart-context";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SITE, SITE_URL } from "@/lib/site-config";
+import { JsonLd, organizationJsonLd } from "@/lib/seo";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -37,12 +38,21 @@ export const metadata: Metadata = {
     images: ["/logo.jpeg"],
   },
   icons: { icon: "/logo.jpeg", apple: "/logo.jpeg" },
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className={jakarta.variable}>
       <body className="flex min-h-screen flex-col font-sans">
+        {organizationJsonLd().map((data, i) => (
+          <JsonLd key={i} data={data} />
+        ))}
         <CartProvider>
           <SiteHeader />
           <main className="flex-1">{children}</main>

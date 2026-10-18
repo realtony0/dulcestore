@@ -12,16 +12,27 @@ import { getAllProductSlugs, getCategories } from "@/lib/queries";
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [products, categories] = await Promise.all([getAllProductSlugs(), getCategories()]);
-
   const pages = ["", "/boutique", "/a-propos", "/contact", "/infos", "/cgv", "/mentions-legales", "/confidentialite"];
+  const statiques = pages.map((path) => ({
+    url: `${SITE_URL}${path}`,
+    changeFrequency: "weekly" as const,
+    priority: path === "" ? 1 : 0.6,
+  }));
+
+  // Une base momentanément injoignable ne doit pas faire échouer le
+  // déploiement : on publie alors le plan du site réduit aux pages fixes,
+  // que la prochaine régénération complétera.
+  let products: { slug: string }[] = [];
+  let categories: { slug: string }[] = [];
+  try {
+    [products, categories] = await Promise.all([getAllProductSlugs(), getCategories()]);
+  } catch (error) {
+    console.error("[sitemap] catalogue indisponible, plan du site réduit :", error);
+    return statiques;
+  }
 
   return [
-    ...pages.map((path) => ({
-      url: `${SITE_URL}${path}`,
-      changeFrequency: "weekly" as const,
-      priority: path === "" ? 1 : 0.6,
-    })),
+    ...statiques,
     ...categories.map((c) => ({
       url: `${SITE_URL}/boutique?categorie=${c.slug}`,
       changeFrequency: "weekly" as const,

@@ -6,6 +6,7 @@ import { LegalLayout, LegalSection, LegalField } from "@/components/legal-layout
 export const metadata: Metadata = {
   title: "Mentions légales",
   description: `Éditeur, hébergeur et informations légales du site ${SITE.domain}.`,
+  alternates: { canonical: "/mentions-legales" }
 };
 
 export default function MentionsLegalesPage() {

@@ -3,14 +3,40 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllProducts, getCategories } from "@/lib/queries";
 import { ProductCard } from "@/components/product-card";
+import { SITE } from "@/lib/site-config";
+import { JsonLd, absoluteUrl, breadcrumbJsonLd } from "@/lib/seo";
 
 type Props = { searchParams: Promise<{ categorie?: string }> };
 
-export const metadata: Metadata = {
-  title: "Boutique",
-  description:
-    "Tous les produits Dulce Store : cuisine professionnelle, packaging, accessoires et beauté, livrés depuis la Chine.",
-};
+/**
+ * Le filtre par catégorie passe par `?categorie=`. Sans titre propre, les cinq
+ * catégories partageraient la même fiche dans les résultats de recherche, et
+ * se concurrenceraient sur des requêtes qu'elles devraient se répartir.
+ */
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const { categorie } = await searchParams;
+  const categories = await getCategories();
+  const active = categories.find((c) => c.slug === categorie);
+
+  if (!active) {
+    return {
+      title: "Boutique",
+      description: `Tous les produits ${SITE.name} : cuisine professionnelle, packaging, accessoires, mode et beauté, importés de Chine et livrés au Sénégal.`,
+      alternates: { canonical: absoluteUrl("/boutique") },
+    };
+  }
+
+  const description =
+    active.tagline?.trim() ||
+    `${active.name} : ${active._count.products} produits importés de Chine, livrés au Sénégal par ${SITE.name}.`;
+
+  return {
+    title: active.name,
+    description,
+    alternates: { canonical: absoluteUrl(`/boutique?categorie=${active.slug}`) },
+    openGraph: { title: `${active.name} — ${SITE.name}`, description },
+  };
+}
 
 export default async function BoutiquePage({ searchParams }: Props) {
   const { categorie } = await searchParams;
@@ -23,12 +49,37 @@ export default async function BoutiquePage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
+      <JsonLd
+        data={breadcrumbJsonLd(
+          active
+            ? [
+                { name: "Accueil", path: "/" },
+                { name: "Boutique", path: "/boutique" },
+                { name: active.name, path: `/boutique?categorie=${active.slug}` },
+              ]
+            : [
+                { name: "Accueil", path: "/" },
+                { name: "Boutique", path: "/boutique" },
+              ],
+        )}
+      />
+
       <nav className="text-sm text-dulce-ink/60">
         <Link href="/" className="hover:text-dulce-orange">
           Accueil
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-dulce-ink">Boutique</span>
+        {active ? (
+          <>
+            <Link href="/boutique" className="hover:text-dulce-orange">
+              Boutique
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="text-dulce-ink">{active.name}</span>
+          </>
+        ) : (
+          <span className="text-dulce-ink">Boutique</span>
+        )}
       </nav>
 
       <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">

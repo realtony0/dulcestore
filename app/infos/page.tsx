@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Infos pratiques",
   description:
     "Livraison, tarifs de fret et cargo maritime, moyens de paiement et déroulé d'une commande chez Dulce Store.",
+  alternates: { canonical: "/infos" }
 };
 
 export default function InfosPage() {

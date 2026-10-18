@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Politique de confidentialité",
   description:
     "Quelles données Dulce Store collecte, pourquoi, combien de temps, et comment exercer vos droits.",
+  alternates: { canonical: "/confidentialite" }
 };
 
 const responsable = LEGAL.raisonSociale.trim() || SITE.name;

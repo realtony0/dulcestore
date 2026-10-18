@@ -7,7 +7,7 @@ import { getShippingMethod, EUROPE_USA_STEPS, formatFCFA, formatWeight } from "@
 import { SITE, paymentMethodLabel, whatsappLink } from "@/lib/site-config";
 import { ClearCart } from "@/components/clear-cart";
 
-export const metadata: Metadata = { title: "Commande confirmée" };
+export const metadata: Metadata = { title: "Commande confirmée", robots: { index: false, follow: false } };
 
 type Props = { searchParams: Promise<{ ref?: string; simule?: string; paiement?: string }> };
 

@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Conditions générales de vente",
   description:
     "Prix, paiement, frais de livraison réglés à l'arrivée, droit de rétractation et remboursement chez Dulce Store.",
+  alternates: { canonical: "/cgv" }
 };
 
 const vendeur = LEGAL.raisonSociale.trim() || SITE.name;

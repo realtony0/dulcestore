@@ -6,6 +6,7 @@ import { SITE, whatsappLink } from "@/lib/site-config";
 export const metadata: Metadata = {
   title: "Contact",
   description: "Contacter Dulce Store par WhatsApp ou par e-mail pour toute question sur une commande, un produit ou une livraison.",
+  alternates: { canonical: "/contact" }
 };
 
 /** Affiche +221 77 876 01 66 à partir du numéro stocké sans indicatif « + ». */
