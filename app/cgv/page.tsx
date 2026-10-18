@@ -91,9 +91,9 @@ export default function CgvPage() {
           ))}
         </dl>
         <p>
-          Les estimations de frais affichées sur le site, calculées à partir des poids indicatifs
-          des fiches produits, n&apos;ont aucune valeur contractuelle. Le montant définitif est
-          communiqué au Client par WhatsApp avant la remise du colis.
+          Aucun montant de livraison n&apos;est annoncé au moment de la commande : seul le tarif
+          au kilo ou au mètre cube est affiché. Le montant définitif est calculé après pesée ou
+          mesure réelle du colis, puis communiqué au Client par WhatsApp avant la remise.
         </p>
         <p>
           Pour l&apos;Europe et les États-Unis, seul le fret international est proposé. Son tarif

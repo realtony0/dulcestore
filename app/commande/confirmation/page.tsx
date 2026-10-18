@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { CheckCircle2 } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { getShippingMethod, EUROPE_USA_STEPS, formatFCFA, formatWeight } from "@/lib/shipping";
+import { getShippingMethod, EUROPE_USA_STEPS, formatFCFA } from "@/lib/shipping";
 import { SITE, paymentMethodLabel, whatsappLink } from "@/lib/site-config";
 import { ClearCart } from "@/components/clear-cart";
 
@@ -124,8 +124,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
           </span>
         </div>
         <p className="mt-1 text-sm text-dulce-ink/60">
-          Réglé par {paiementLabel} · Poids total estimé :{" "}
-          {formatWeight(order.totalWeightKg)}
+          Réglé par {paiementLabel}
         </p>
       </section>
 

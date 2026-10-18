@@ -4,11 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
-import { formatFCFA, formatWeight } from "@/lib/shipping";
+import { formatFCFA } from "@/lib/shipping";
 import { isDisplayableImage } from "@/lib/images";
 
 export default function CartPage() {
-  const { lines, setQuantity, remove, clear, totalFCFA, totalWeightKg, ready } = useCart();
+  const { lines, setQuantity, remove, clear, totalFCFA, ready } = useCart();
 
   if (!ready) return <div className="mx-auto max-w-4xl px-4 py-16" />;
 
@@ -113,9 +113,6 @@ export default function CartPage() {
           <span className="font-semibold">Total produits</span>
           <span className="text-3xl font-extrabold text-dulce-orange">{formatFCFA(totalFCFA)}</span>
         </div>
-        <p className="mt-1 text-sm text-dulce-ink/60">
-          Poids total estimé : {formatWeight(totalWeightKg)}
-        </p>
 
         <div className="mt-5 rounded-xl bg-dulce-orange-light p-4 text-sm">
           <p className="font-semibold">Les frais de livraison ne sont pas inclus</p>

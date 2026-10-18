@@ -6,9 +6,7 @@ import { useEffect, useState } from "react";
 import { useCart } from "@/lib/cart-context";
 import {
   EUROPE_USA_STEPS,
-  estimateShippingFCFA,
   formatFCFA,
-  formatWeight,
   methodsForDestination,
   type Destination,
 } from "@/lib/shipping";
@@ -18,7 +16,7 @@ import { PaymentIcon, ShippingIcon } from "@/components/icons";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { lines, totalFCFA, totalWeightKg, ready } = useCart();
+  const { lines, totalFCFA, ready } = useCart();
 
   const [destination, setDestination] = useState<Destination>("SENEGAL");
   const [shippingMethodId, setShippingMethodId] = useState("FRET");
@@ -48,8 +46,6 @@ export default function CheckoutPage() {
       </div>
     );
   }
-
-  const shippingEstimate = selectedMethod ? estimateShippingFCFA(selectedMethod, totalWeightKg) : null;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -282,28 +278,18 @@ export default function CheckoutPage() {
                 {formatFCFA(totalFCFA)}
               </span>
             </div>
-            <p className="mt-1 text-sm text-dulce-ink/60">
-              Poids total estimé : {formatWeight(totalWeightKg)}
-            </p>
+
           </div>
 
           <div className="mt-4 rounded-xl bg-dulce-cream p-4 text-sm">
             <p className="font-semibold">Livraison — à payer à l&apos;arrivée</p>
-            {shippingEstimate !== null ? (
-              <p className="mt-1 text-dulce-ink/70">
-                Estimation : <strong>{formatFCFA(shippingEstimate)}</strong> pour{" "}
-                {formatWeight(totalWeightKg)}. Le montant définitif est fixé après pesée réelle du
-                colis.
-              </p>
-            ) : (
-              <p className="mt-1 text-dulce-ink/70">
-                {selectedMethod?.rate?.unit === "CBM"
-                  ? `${formatFCFA(selectedMethod.rate.amountFCFA)} / CBM. Le montant dépend du volume réel de votre colis et vous est communiqué par WhatsApp.`
-                  : selectedMethod?.rate
-                    ? `${formatFCFA(selectedMethod.rate.amountFCFA)} / kg. Le poids de votre colis sera confirmé après pesée et le montant vous est communiqué par WhatsApp.`
-                    : "Le montant vous est communiqué par WhatsApp après validation de la commande."}
-              </p>
-            )}
+            <p className="mt-1 text-dulce-ink/70">
+              {selectedMethod?.rate
+                ? `${selectedMethod.name} : ${formatFCFA(selectedMethod.rate.amountFCFA)} / ${selectedMethod.rate.unit}.`
+                : `${selectedMethod?.name ?? "Fret international"} :`}{" "}
+              Le montant exact est calculé après pesée ou mesure réelle de votre colis, puis
+              communiqué par WhatsApp avant la livraison.
+            </p>
           </div>
 
           {error && (

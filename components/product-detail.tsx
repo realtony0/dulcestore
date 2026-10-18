@@ -200,11 +200,6 @@ export function ProductDetail(p: Props) {
               Voir les tarifs
             </Link>
           </p>
-          {unitWeight > 0 && (
-            <p className="mt-2 text-xs text-dulce-ink/60">
-              Poids indicatif de cette ligne : {(unitWeight * quantity).toFixed(2)} kg
-            </p>
-          )}
         </div>
 
         {p.description.trim() && (
