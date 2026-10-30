@@ -5,13 +5,15 @@ import { redirect } from "next/navigation";
 import { prisma } from "./db";
 import { isAuthenticated } from "./admin-auth";
 import { uploadImage, deleteImage, isR2Configured } from "./r2";
+import { confirmPaydunyaInvoice } from "./payments/paydunya";
 
 /**
  * Écritures du back-office. Chaque action revérifie la session : une action
  * serveur est une route HTTP à part entière, la protection de la page ne suffit
  * pas à la sécuriser.
  *
- * Aucune action ne touche aux commandes.
+ * Seule `refreshPendingPayments` touche aux commandes, et uniquement pour
+ * aligner leur statut sur celui que le prestataire de paiement fait foi.
  */
 
 /**
@@ -392,6 +394,77 @@ export async function deleteVariant(_prev: ActionResult, formData: FormData): Pr
     await syncPriceFromVariants(variant.productId);
     refresh();
     return {};
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ------------------------------------------------------- paiements en attente
+
+/**
+ * Redemande à PayDunya le sort des commandes restées « en attente ».
+ *
+ * PayDunya notifie le paiement, mais pas l'expiration : une facture non réglée
+ * bascule chez lui en « annulée » au bout de 24 heures sans qu'aucune
+ * notification ne nous parvienne. Sans cette vérification, une commande
+ * abandonnée reste indéfiniment « en attente » dans le back-office, et la
+ * liste cesse de dire la vérité.
+ *
+ * Rattrape aussi un paiement dont la notification se serait perdue.
+ */
+export async function refreshPendingPayments(
+  _prev: ActionResult,
+  _formData: FormData,
+): Promise<ActionResult> {
+  try {
+    await requireAdmin();
+
+    const enAttente = await prisma.order.findMany({
+      where: { paymentStatus: "EN_ATTENTE", providerRef: { not: null } },
+      select: { id: true, providerRef: true, productTotalFCFA: true, reference: true },
+    });
+
+    let payees = 0;
+    let abandonnees = 0;
+
+    for (const order of enAttente) {
+      const confirmation = await confirmPaydunyaInvoice(order.providerRef!);
+      if (!confirmation) continue;
+
+      if (confirmation.status === "completed") {
+        // Même garde-fou que l'IPN : on n'encaisse que le montant attendu.
+        if (confirmation.totalAmountFCFA !== order.productTotalFCFA) {
+          console.error(
+            `[admin] montant incohérent pour ${order.reference} : ${confirmation.totalAmountFCFA} reçu, ${order.productTotalFCFA} attendu`,
+          );
+          continue;
+        }
+        await prisma.order.update({
+          where: { id: order.id },
+          data: {
+            paymentStatus: "PAYE",
+            status: "PAIEMENT_CONFIRME",
+            ...(confirmation.paymentMethod ? { paymentMethod: confirmation.paymentMethod } : {}),
+          },
+        });
+        payees++;
+      } else if (confirmation.status === "cancelled" || confirmation.status === "failed") {
+        await prisma.order.update({
+          where: { id: order.id },
+          data: { paymentStatus: "ECHEC" },
+        });
+        abandonnees++;
+      }
+    }
+
+    revalidatePath("/admin");
+
+    if (payees === 0 && abandonnees === 0) {
+      return { error: "Aucun changement : toutes les commandes en attente le sont toujours." };
+    }
+    return {
+      error: `${payees} commande(s) passée(s) en payé, ${abandonnees} abandonnée(s). Liste à jour.`,
+    };
   } catch (e) {
     return fail(e);
   }

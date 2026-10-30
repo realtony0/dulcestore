@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, RefreshCw } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getShippingMethod, formatFCFA, formatWeight } from "@/lib/shipping";
 import { paymentMethodLabel } from "@/lib/site-config";
+import { refreshPendingPayments } from "@/lib/admin-actions";
+import { AdminForm, SubmitButton } from "@/components/admin-form";
 
 export const metadata: Metadata = { title: "Commandes", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -27,7 +29,20 @@ export default async function AdminPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-extrabold tracking-tight">Commandes</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-extrabold tracking-tight">Commandes</h1>
+        {/* PayDunya ne notifie pas l'expiration d'une facture : sans cette
+            vérification, une commande abandonnée reste « en attente ». */}
+        <AdminForm action={refreshPendingPayments}>
+          <SubmitButton
+            pendingLabel="Vérification…"
+            className="focus-ring inline-flex items-center gap-2 rounded-lg border border-dulce-ink/15 bg-white px-4 py-2 text-sm font-semibold transition hover:border-dulce-orange hover:text-dulce-orange"
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden />
+            Vérifier les paiements en attente
+          </SubmitButton>
+        </AdminForm>
+      </div>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-dulce-border bg-white p-5">
@@ -58,7 +73,17 @@ export default async function AdminPage() {
               cls: "bg-slate-200 text-slate-700",
             };
             const shipping = getShippingMethod(order.shippingMethod);
-            const paiement = paymentMethodLabel(order.paymentMethod);
+            // Avant paiement, `paymentMethod` ne contient que le nom de
+            // l'agrégateur : l'afficher comme « réglé par » laissait croire
+            // qu'une commande en attente avait été encaissée.
+            const paiement =
+              order.paymentStatus === "PAYE"
+                ? `Réglé par ${paymentMethodLabel(order.paymentMethod)}`
+                : order.paymentStatus === "ECHEC"
+                  ? "Paiement échoué"
+                  : order.paymentStatus === "REMBOURSE"
+                    ? "Commande remboursée"
+                    : "Aucun paiement reçu";
             const phone = order.customerPhone.replace(/[^\d]/g, "");
 
             return (
@@ -130,12 +155,20 @@ export default async function AdminPage() {
                     <p className="text-sm text-dulce-ink/70">
                       Poids estimé : <strong>{formatWeight(order.totalWeightKg)}</strong>
                     </p>
-                    <p className="text-sm text-dulce-ink/70">
-                      Réglé par {paiement}
+                    <p
+                      className={`text-sm font-semibold ${
+                        order.paymentStatus === "PAYE"
+                          ? "text-emerald-700"
+                          : order.paymentStatus === "EN_ATTENTE"
+                            ? "text-amber-700"
+                            : "text-dulce-ink/70"
+                      }`}
+                    >
+                      {paiement}
                     </p>
                     {order.providerRef && (
                       <p className="mt-1 font-mono text-xs text-dulce-ink/45">
-                        PayTech : {order.providerRef}
+                        Facture : {order.providerRef}
                       </p>
                     )}
                   </div>

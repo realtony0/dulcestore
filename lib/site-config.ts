@@ -122,6 +122,10 @@ export function paymentMethodLabel(value: string): string {
     "expresso-sn": "Expresso",
     card: "Carte bancaire",
   };
+  // PayDunya renvoie ses identifiants avec des tirets bas
+  // (« orange_money_senegal ») alors que sa documentation les écrit avec des
+  // tirets. On accepte les deux écritures.
   const cle = value.trim();
-  return connus[cle] ?? connus[cle.toLowerCase()] ?? cle;
+  const normalise = cle.toLowerCase().replace(/_/g, "-");
+  return connus[cle] ?? connus[cle.toLowerCase()] ?? connus[normalise] ?? cle;
 }
